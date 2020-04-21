@@ -1,0 +1,113 @@
+{
+  "root": ["~", "PycharmProjects", "comic_sort", "Webcomics"],
+  "download": ["~", "Stažené"],
+  "mappings": [
+    {
+      "title": "Dangerously Chloe",
+      "pattern": "[0-9]+-<dc20[1-4][0-9](0[1-9]|1[0-2])([0-2][0-9]|3[0-1])[a-zA-Z]?.png>",
+      "directory": "Dangerously Chloe"
+    },
+    {
+      "title": "Darths & Droids",
+      "pattern": "darths[0-9][0-9][0-9][0-9].jpg",
+      "directory": "Darths & Droids"
+    },
+    {
+      "title": "Gunnerkrig Court",
+      "pattern": "0000[0-3][0-9][0-9][0-9].jpg",
+      "directory": "Gunnerkrig Court"
+    },
+    {
+      "title": "Misfile",
+      "pattern": "20[1-4][0-9](0[1-9]|1[0-2])([0-2][0-9]|3[0-1])_[a-zA-Z0-9]{4}.jpg",
+      "directory": "Misfile"
+    },
+    {
+      "title": "Girl Genius",
+      "pattern": "ggmain20[1-4][0-9](0[1-9]|1[0-2])([0-2][0-9]|3[0-1])[a-d]?.jpg",
+      "directory": "Girl Genius"
+    },
+    {
+      "title": "El Goonish Shive",
+      "pattern": "[0-9]+-1904-?[a-zA-Z0-9]+[0-9]*[_-]([0-9]+|[A-Z][0-9])(-[a-zA-Z0-9-]+)?.png",
+      "directory": "El Goonish Shive",
+      "function": "egs"
+    },
+    {
+      "title": "El Goonish Shive",
+      "pattern": "[0-9]+-(announce_)?<20[1-4][0-9](0[1-9]|1[0-2])([0-2][0-9]|3[0-1])-?[a-zA-Z0-9]+[0-9]*[_-][0-9]+(-[a-zA-Z0-9-]+)?.png>",
+      "directory": "El Goonish Shive"
+    },
+    {
+      "title": "El Goonish Shive NP",
+      "pattern": "[0-9]+-<np20[1-4][0-9](0[1-9]|1[0-2])3([0-2][0-9]|3[0-1])-.+-[0-9A-Za-z]+(_end|-title|-fixed|-v[0-9]+|-[a-z]+)?.png>",
+      "directory": ["El Goonish Shive", "EGS NP"],
+      "function": "egs_np"
+    },
+    {
+      "title": "El Goonish Shive sketchbook",
+      "pattern": "fgs.*.png",
+      "directory": ["El Goonish Shive", "Sketchbook"]
+    },
+    {
+      "title": "El Goonish Shive sketchbook",
+      "pattern": "[0-9]+-sketch-[0-9]+.png",
+      "directory": ["El Goonish Shive", "Sketchbook"],
+      "function": "egs_sketch"
+    },
+    {
+      "title": "Go Get a Roomie",
+      "pattern": "[0-9]+-<20[1-4][0-9]-(0[1-9]|1[0-2])-([0-2][0-9]|3[0-1])-[A-Za-z-0-9]+.(jpg|png)>",
+      "directory": "Go Get a Roomie"
+    },
+    {
+      "title": "The Cummoner",
+      "pattern": "cummoner[0-9]+_[0-9]+([_-][a-zA-Z0-9]+)?.(jpg|png)",
+      "directory": ["The Cummoner", "Part <8:2>"]
+    },
+    {
+      "title": "Bloomin' Faeries",
+      "pattern": "(IMG_|BF)[0-9]+(_Heather)?(_color)?.jpe?g",
+      "directory": "Bloomin' Faeries",
+      "function": "bloomin_faeries"
+    },
+    {
+      "title": "Delve",
+      "pattern": "<episode[0-9]+.jpg>(_fit=.+)?",
+      "directory": "Delve"
+    },
+    {
+      "title": "Grrl Power",
+      "pattern": "20(1[4-9]|2[0-9])-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])-GP[0-9]+.jpg",
+      "directory": "Grrl Power"
+    },
+    {
+      "title": "Sparkling Generation Valkyrie Yuuki",
+      "pattern": "sgvy-e[0-9]+-i[0-9]+-p[0-9]+(-xxx)?.jpg",
+      "directory": "Sparkling Generation Valkyrie Yuuki",
+      "function": "yuuki"
+    },
+    {
+      "title": "Mercynaries",
+      "pattern": "mercynaries_issue_[0-9]+.pdf",
+      "directory": "Mercynaries"
+    },
+    {
+        "title": "Star Power",
+        "pattern": "20(1[8-9]|2[0-9])-(0[1-9]|1[0-2])-([0-2][0-9]|3[01]).jpg",
+        "directory": "Star Power"
+    },
+    {
+        "title": "Hell High",
+        "pattern": "[0-9]+-(title)?(page[0-9]+|(christmas|newyear)20[1-3][0-9]).jpg",
+        "directory": "Misfile",
+        "function": "hell_high"
+    },
+    {
+      "title": "Bloomin' Faeries",
+      "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}.jpeg",
+      "directory": "Bloomin' Faeries",
+      "function": "bloomin_faeries"
+    }
+  ]
+}
