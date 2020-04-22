@@ -5,20 +5,42 @@ import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Union
 
-try:
-    from specials import special
-except ImportError:
-    special = {}
+import pendulum
 
 replace_pattern = re.compile(r".*<(.*)>.*")
 
 _config = Path(__file__).parent / "config.json"
 
-MapType = Dict[str, Union[str, List[str]]]
-ComicFunction = Callable[[str], str]
-FunctionTuple = Tuple[str, ComicFunction]
+Replacement = Dict[str, str]
+FolderPath = List[str]
+ConfigItem = Union[str, FolderPath, Dict[str, Replacement]]
+ProcessorItem = Dict[str, Union[str, Replacement]]
+
+MapType = Dict[str, ConfigItem]
+Config = Dict[str, Union[str, Dict[str, str]]]
+
+
+@dataclass
+class Parser:
+    splitter: Optional[str]
+    merger: Optional[str]
+    format: Optional[str]
+    pattern: Optional[re.Pattern]
+    replacement: Optional[str]
+
+    @classmethod
+    def from_config(cls, processors: ProcessorItem):
+        pattern = re.compile(processors.get("pattern")) if "pattern" in processors.keys() else None
+        replacement = processors["replacement"]["slash"] if "replacement" in processors.keys() else None
+        return cls(
+            processors.get("splitter"),
+            processors.get("merger"),
+            processors.get("format"),
+            pattern,
+            replacement,
+        )
 
 
 @dataclass
@@ -27,18 +49,18 @@ class Mapping:
     dir: Path
     original: str
     new: str
-    fn: Optional[FunctionTuple]
+    parser: Optional[Parser]
 
     @classmethod
-    def from_config(cls, config: Dict[str, str], root: str):
+    def from_config(cls, config: Config, root: str):
         title = config["title"]
 
         root = Path(root)
 
         try:
-            dir = root.joinpath(config["directory"])
+            folder = root.joinpath(config["directory"])
         except TypeError:
-            dir = root.joinpath(*config["directory"])
+            folder = root.joinpath(*config["directory"])
 
         if replace_pattern.match(config["pattern"]):
             original_pattern = re.sub(r"[<>]", "", config["pattern"])
@@ -46,12 +68,16 @@ class Mapping:
         else:
             original_pattern = config["pattern"]
             new_pattern = config["pattern"]
-        try:
-            fn = special[config["function"]]
-        except KeyError:
-            fn = None
+        processors = config.get("processors")
+        parser = Parser.from_config(processors) if processors else None
 
-        return cls(title, dir, original_pattern, new_pattern, fn)
+        return cls(
+            title,
+            folder,
+            original_pattern,
+            new_pattern,
+            parser
+        )
 
 
 @dataclass
@@ -82,34 +108,41 @@ class Processor:
         replacement = replace_pattern.match(str(directory))
         if not replacement:
             return directory
-        else:
-            start, length = map(int, replacement.group(1).split(":"))
-            replace_part = self.file[start : start + length]
-            new_dir = re.sub(
-                r"<" + replacement.group(1) + r">", replace_part, str(directory)
-            )
-            return Path(new_dir)
+        start, length = map(int, replacement.group(1).split(":"))
+        replace_part = self.file[start: start + length]
+        new_dir = re.sub(
+            r"<" + replacement.group(1) + r">", replace_part, str(directory)
+        )
+        return Path(new_dir)
 
     def parse_file(self, pattern: str) -> str:
         replacement = re.search(pattern, self.file)
         return replacement.group()
 
-    def make_target_dir(self, dir: Path):
-        self._target = self.parse_dir(dir)
+    def make_target_dir(self, folder: Path):
+        self._target = self.parse_dir(folder)
         try:
             self._target.mkdir(parents=True)
             print(f"{self._target} doesn't exist. Creating directory.")
         except FileExistsError:
             pass
 
-    def make_dst(self, new_name: str, _fn: Optional[FunctionTuple]) -> Path:
+    def make_dst(self, new_name: str, mapping: Mapping) -> Path:
         dst = self.parse_file(new_name)
-        if _fn:
-            arg, fn = _fn
-            if arg == "dir":
-                dst = fn(self.target)
-            elif arg == "filename":
-                dst = fn(self.file)
+        # if mapping.fn:
+        #     if mapping.fn.arg == "dir":
+        #         dst = mapping.fn.fn(self.target)
+        #     elif mapping.fn.arg == "filename":
+        #         dst = mapping.fn.fn(self.file)
+        if mapping.parser:
+            if mapping.parser.splitter:
+                stamp, suffix = dst.split(mapping.parser.splitter)
+                fmt = mapping.parser.format.format(year="YYYY", month="MM", day="DD")
+                creation_date = pendulum.from_timestamp(int(stamp)).format(fmt)
+                merger = mapping.parser.merger if mapping.parser.merger else "-"
+                dst = merger.join((creation_date, suffix))
+            if mapping.parser.pattern:
+                dst = mapping.parser.pattern.sub(mapping.parser.replacement, dst)
 
         return self._target.joinpath(dst)
 
@@ -122,19 +155,21 @@ class Processor:
         return str(self._target)
 
 
-def process_file(file: Path, mappings: List[Mapping]):
+def process_file(file: Path, mappings: List[Mapping], fs: FSManager):
     processor = Processor(file)
 
     for mapping in mappings:
         if re.match(mapping.original, processor.file):
-            print(f"{file} found! Applying setup for {mapping.title}")
+            print(f"{processor.file} found! Applying setup for {mapping.title}")
 
             processor.make_target_dir(mapping.dir)
 
             source = fs.download.joinpath(processor.file)
-            target = processor.make_dst(mapping.new, mapping.fn)
+            target = processor.make_dst(mapping.new, mapping)
 
-            shutil.move(Path(source), Path(target))
+            print(source, target)
+
+            # shutil.move(Path(source), Path(target))
 
 
 def run() -> None:
@@ -148,7 +183,7 @@ def run() -> None:
     ]
 
     for file in fs.files:
-        process_file(file, mappings)
+        process_file(file, mappings, fs)
 
 
 if __name__ == "__main__":
