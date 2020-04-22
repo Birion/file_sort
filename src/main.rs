@@ -207,9 +207,8 @@ impl Processor {
         let mut result: String = self.filename().to_string();
         let r: Regex = Regex::new(pattern).unwrap();
         let group: Option<Match> = r.captures(self.filename()).unwrap().get(0);
-        if !group.is_none() {
-            let group: &str = group.unwrap().as_str();
-            result = group.to_string()
+        if let Some(g) = group {
+            result = g.as_str().to_string();
         }
         Ok(result)
     }
@@ -220,12 +219,12 @@ impl Processor {
         self
     }
 
-    fn make_dst(&self, new_name: &String, mapping: &Mapping) -> PathBuf {
-        let mut dst: String = self.parse_file(new_name.as_str()).unwrap();
+    fn make_dst(&self, new_name: &str, mapping: &Mapping) -> PathBuf {
+        let mut dst: String = self.parse_file(new_name).unwrap();
 
         if mapping.parser.is_some() {
             let p: Option<&Parser> = mapping.parser.as_ref();
-            if !p.unwrap().splitter.is_none() {
+            if p.unwrap().splitter.is_some() {
                 let parts: Vec<&str> = dst.split(p.unwrap().splitter.as_ref().unwrap().as_str())
                     .collect();
                 let creation_date: String = Utc.timestamp(parts[0].parse().unwrap(), 0)
@@ -233,7 +232,7 @@ impl Processor {
                 dst = vec![creation_date.as_str(), parts[1]]
                     .join(p.unwrap().merger.as_ref().unwrap().as_str());
             }
-            if !p.unwrap().pattern.is_none() {
+            if p.unwrap().pattern.is_some() {
                 let pat = p.unwrap().pattern.as_ref().unwrap();
                 dst = pat.replace(dst.as_str(),
                                   p.unwrap().replacement.as_ref().unwrap().as_str())
@@ -245,7 +244,7 @@ impl Processor {
     }
 }
 
-fn process_file(file: &PathBuf, mappings: &Vec<Mapping>, fs: &FSManager) -> Result<(), io::Error> {
+fn process_file(file: &PathBuf, mappings: &[Mapping], fs: &FSManager) -> Result<(), io::Error> {
     let mut processor: Processor = Processor::new(file);
 
     for mapping in mappings {
@@ -287,6 +286,6 @@ fn main() {
         ).collect();
 
     for file in &fs.files {
-        let _ = process_file(file, &mappings, &fs).unwrap();
+        process_file(file, &mappings, &fs).unwrap();
     }
 }
