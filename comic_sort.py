@@ -160,16 +160,17 @@ def process_file(file: Path, mappings: List[Mapping], fs: FSManager):
 
     for mapping in mappings:
         if re.match(mapping.original, processor.file):
-            print(f"{processor.file} found! Applying setup for {mapping.title}")
 
             processor.make_target_dir(mapping.dir)
 
             source = fs.download.joinpath(processor.file)
             target = processor.make_dst(mapping.new, mapping)
+            print(f"{processor.file} found! Applying setup for {mapping.title}.")
+            if target.name != processor.file:
+                print(f"New filename: {target.name}")
+            print()
 
-            print(source, target)
-
-            # shutil.move(Path(source), Path(target))
+            shutil.move(Path(source), Path(target))
 
 
 def run() -> None:
