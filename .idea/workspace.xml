@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="49fdc590-c0aa-489e-961d-6ceb564bd8b0" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/comic_sort.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/comic_sort.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="wh0rz6gm" />
+  </component>
+  <component name="ProjectId" id="1b7QPsKuqHEk0wdEaUALh7FL7MC" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
+    <property name="settings.editor.selected.configurable" value="MTConfigurable" />
+  </component>
+  <component name="RunManager" selected="Cargo Command.Run comic_sort">
+    <configuration name="All Tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="test" />
+      <option name="allFeatures" value="false" />
+      <option name="nocapture" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Expand comic_sort" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="expand --bin comic_sort --color=always --theme=GitHub --tests" />
+      <option name="allFeatures" value="false" />
+      <option name="nocapture" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Run comic_sort" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="run --package comic_sort --bin comic_sort" />
+      <option name="allFeatures" value="false" />
+      <option name="nocapture" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Cargo Command.Expand comic_sort" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+    <option name="version" value="2" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="49fdc590-c0aa-489e-961d-6ceb564bd8b0" name="Default Changelist" comment="" />
+      <created>1587980630860</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1587980630860</updated>
+      <workItem from="1587980632036" duration="2310000" />
+      <workItem from="1587984260503" duration="1768000" />
+      <workItem from="1587987833204" duration="1446000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="365" y="248" width="1180" height="617" key="#All_Tests" timestamp="1587980753063">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="365" y="248" width="1180" height="617" key="#All_Tests/0.27.1920.1053@0.27.1920.1053" timestamp="1587980753063" />
+    <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1587984615934">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1587984615934" />
+    <state width="1872" height="246" key="GridCell.Tab.0.bottom" timestamp="1587987829100">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1872" height="246" key="GridCell.Tab.0.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1587987829100" />
+    <state width="1872" height="246" key="GridCell.Tab.0.center" timestamp="1587987829100">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1872" height="246" key="GridCell.Tab.0.center/0.27.1920.1053@0.27.1920.1053" timestamp="1587987829100" />
+    <state width="1872" height="246" key="GridCell.Tab.0.left" timestamp="1587987829100">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1872" height="246" key="GridCell.Tab.0.left/0.27.1920.1053@0.27.1920.1053" timestamp="1587987829100" />
+    <state width="1872" height="246" key="GridCell.Tab.0.right" timestamp="1587987829100">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1872" height="246" key="GridCell.Tab.0.right/0.27.1920.1053@0.27.1920.1053" timestamp="1587987829100" />
+    <state width="1872" height="338" key="GridCell.Tab.1.bottom" timestamp="1587982217680">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1872" height="338" key="GridCell.Tab.1.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1587982217680" />
+    <state width="1872" height="338" key="GridCell.Tab.1.center" timestamp="1587982217680">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1872" height="338" key="GridCell.Tab.1.center/0.27.1920.1053@0.27.1920.1053" timestamp="1587982217680" />
+    <state width="1872" height="338" key="GridCell.Tab.1.left" timestamp="1587982217680">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1872" height="338" key="GridCell.Tab.1.left/0.27.1920.1053@0.27.1920.1053" timestamp="1587982217680" />
+    <state width="1872" height="338" key="GridCell.Tab.1.right" timestamp="1587982217680">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="1872" height="338" key="GridCell.Tab.1.right/0.27.1920.1053@0.27.1920.1053" timestamp="1587982217680" />
+    <state x="672" y="141" width="1007" height="737" key="SettingsEditor" timestamp="1587988036827">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="672" y="141" width="1007" height="737" key="SettingsEditor/0.27.1920.1053@0.27.1920.1053" timestamp="1587988036827" />
+  </component>
+</project>
