@@ -31,9 +31,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="49fdc590-c0aa-489e-961d-6ceb564bd8b0" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/comic_sort.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/comic_sort.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/processor.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/processor.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,7 +66,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="settings.editor.selected.configurable" value="MTConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RunManager" selected="Cargo Command.Run comic_sort">
     <configuration name="All Tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
@@ -131,8 +130,24 @@
       <updated>1587980630860</updated>
       <workItem from="1587980632036" duration="2310000" />
       <workItem from="1587984260503" duration="1768000" />
-      <workItem from="1587987833204" duration="1446000" />
+      <workItem from="1587987833204" duration="2799000" />
+      <workItem from="1588012024426" duration="1768000" />
+      <workItem from="1588022367590" duration="191000" />
+      <workItem from="1588022639298" duration="1922000" />
+      <workItem from="1588153858466" duration="21000" />
+      <workItem from="1588177310929" duration="69000" />
+      <workItem from="1588177509101" duration="1424000" />
+      <workItem from="1590136119589" duration="870000" />
+      <workItem from="1590137351860" duration="1176000" />
     </task>
+    <task id="LOCAL-00001" summary="Move project from PyCharm to CLion">
+      <created>1588008926119</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1588008926119</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -150,6 +165,10 @@
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Move project from PyCharm to CLion" />
+    <option name="LAST_COMMIT_MESSAGE" value="Move project from PyCharm to CLion" />
+  </component>
   <component name="WindowStateProjectService">
     <state x="365" y="248" width="1180" height="617" key="#All_Tests" timestamp="1587980753063">
       <screen x="0" y="27" width="1920" height="1053" />
@@ -159,22 +178,22 @@
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
     <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1587984615934" />
-    <state width="1872" height="246" key="GridCell.Tab.0.bottom" timestamp="1587987829100">
+    <state width="1872" height="255" key="GridCell.Tab.0.bottom" timestamp="1588019810824">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="246" key="GridCell.Tab.0.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1587987829100" />
-    <state width="1872" height="246" key="GridCell.Tab.0.center" timestamp="1587987829100">
+    <state width="1872" height="255" key="GridCell.Tab.0.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1588019810824" />
+    <state width="1872" height="255" key="GridCell.Tab.0.center" timestamp="1588019810824">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="246" key="GridCell.Tab.0.center/0.27.1920.1053@0.27.1920.1053" timestamp="1587987829100" />
-    <state width="1872" height="246" key="GridCell.Tab.0.left" timestamp="1587987829100">
+    <state width="1872" height="255" key="GridCell.Tab.0.center/0.27.1920.1053@0.27.1920.1053" timestamp="1588019810824" />
+    <state width="1872" height="255" key="GridCell.Tab.0.left" timestamp="1588019810824">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="246" key="GridCell.Tab.0.left/0.27.1920.1053@0.27.1920.1053" timestamp="1587987829100" />
-    <state width="1872" height="246" key="GridCell.Tab.0.right" timestamp="1587987829100">
+    <state width="1872" height="255" key="GridCell.Tab.0.left/0.27.1920.1053@0.27.1920.1053" timestamp="1588019810824" />
+    <state width="1872" height="255" key="GridCell.Tab.0.right" timestamp="1588019810824">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="246" key="GridCell.Tab.0.right/0.27.1920.1053@0.27.1920.1053" timestamp="1587987829100" />
+    <state width="1872" height="255" key="GridCell.Tab.0.right/0.27.1920.1053@0.27.1920.1053" timestamp="1588019810824" />
     <state width="1872" height="338" key="GridCell.Tab.1.bottom" timestamp="1587982217680">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
@@ -191,9 +210,13 @@
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
     <state width="1872" height="338" key="GridCell.Tab.1.right/0.27.1920.1053@0.27.1920.1053" timestamp="1587982217680" />
-    <state x="672" y="141" width="1007" height="737" key="SettingsEditor" timestamp="1587988036827">
+    <state x="672" y="141" width="1007" height="737" key="SettingsEditor" timestamp="1588012293420">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state x="672" y="141" width="1007" height="737" key="SettingsEditor/0.27.1920.1053@0.27.1920.1053" timestamp="1587988036827" />
+    <state x="672" y="141" width="1007" height="737" key="SettingsEditor/0.27.1920.1053@0.27.1920.1053" timestamp="1588012293420" />
+    <state x="555" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1588011895516">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="555" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2/0.27.1920.1053@0.27.1920.1053" timestamp="1588011895516" />
   </component>
 </project>

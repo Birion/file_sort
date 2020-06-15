@@ -40,10 +40,12 @@ impl Processor {
 
         let start: usize = rg[0];
         let finish: usize = rg[0] + rg[1];
-        let replace_part: &str =
-            &String::from(self.file.file_name().unwrap().to_str().unwrap())[start..finish];
+        let replacer: String = String::from(self.filename());
+        let replace_part: &str = replacer[start..finish].as_ref();
 
-        let new_pattern: Regex = Regex::new(format!("<{}>", found_group.unwrap().as_str()).as_str())
+        let new_pattern: Regex = Regex::new(
+            format!("<{}>", found_group.unwrap().as_str()).as_str()
+        )
             .unwrap();
 
         let dir: String = new_pattern
