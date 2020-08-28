@@ -7,6 +7,7 @@ use regex::{Match, Regex};
 
 use crate::config::{Config, Mapping};
 use crate::config::Processor as ConfigProcessor;
+use colored::Colorize;
 
 struct Processor {
     file: PathBuf,
@@ -110,12 +111,12 @@ pub fn process_file(file: &PathBuf, config: &Config) -> Result<(), io::Error> {
             let new_filename: &str = target.file_name().unwrap().to_str().unwrap();
             println!(
                 "{file} found! Applying setup for {title}.",
-                file = processor.filename(),
-                title = mapping.title,
+                file = processor.filename().bold(),
+                title = mapping.title.bold().blue(),
             );
             if new_filename != processor.filename()
             {
-                println!("New filename: {}", new_filename)
+                println!("New filename: {}", new_filename.bold().red())
             }
             println!();
 

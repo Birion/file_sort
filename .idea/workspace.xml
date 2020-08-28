@@ -32,6 +32,7 @@
   <component name="ChangeListManager">
     <list default="true" id="49fdc590-c0aa-489e-961d-6ceb564bd8b0" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/processor.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/processor.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -73,7 +74,6 @@
       <option name="channel" value="DEFAULT" />
       <option name="command" value="test" />
       <option name="allFeatures" value="false" />
-      <option name="nocapture" value="false" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -86,7 +86,6 @@
       <option name="channel" value="DEFAULT" />
       <option name="command" value="expand --bin comic_sort --color=always --theme=GitHub --tests" />
       <option name="allFeatures" value="false" />
-      <option name="nocapture" value="false" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -99,7 +98,6 @@
       <option name="channel" value="DEFAULT" />
       <option name="command" value="run --package comic_sort --bin comic_sort" />
       <option name="allFeatures" value="false" />
-      <option name="nocapture" value="false" />
       <option name="emulateTerminal" value="false" />
       <option name="backtrace" value="SHORT" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -108,8 +106,35 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Docker Image" type="docker-deploy" factoryName="docker-image" temporary="true" server-name="Docker">
+      <deployment type="docker-image">
+        <settings>
+          <option name="imageTag" value="clux/muslrust:latest" />
+          <option name="command" value="cargo build --release" />
+          <option name="containerName" value="" />
+          <option name="entrypoint" value="" />
+          <option name="commandLineOptions" value="--rm -t" />
+          <option name="volumeBindings">
+            <list>
+              <DockerVolumeBindingImpl>
+                <option name="containerPath" value="/volume" />
+                <option name="hostPath" value="$PROJECT_DIR$/../rcp_patch_reader" />
+              </DockerVolumeBindingImpl>
+            </list>
+          </option>
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Cargo Command.All Tests" />
+      <item itemvalue="Cargo Command.Run comic_sort" />
+      <item itemvalue="Cargo Command.Expand comic_sort" />
+      <item itemvalue="Docker.Docker Image" />
+    </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Docker.Docker Image" />
         <item itemvalue="Cargo Command.Expand comic_sort" />
       </list>
     </recent_temporary>
@@ -118,6 +143,7 @@
     <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
     <option name="version" value="2" />
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -139,6 +165,9 @@
       <workItem from="1588177509101" duration="1424000" />
       <workItem from="1590136119589" duration="870000" />
       <workItem from="1590137351860" duration="1176000" />
+      <workItem from="1592219745906" duration="2778000" />
+      <workItem from="1596793327559" duration="53000" />
+      <workItem from="1598610660787" duration="647000" />
     </task>
     <task id="LOCAL-00001" summary="Move project from PyCharm to CLion">
       <created>1588008926119</created>
@@ -147,11 +176,18 @@
       <option name="project" value="LOCAL" />
       <updated>1588008926119</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Project admin updates">
+      <created>1592219777636</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1592219777636</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="2" />
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -167,17 +203,23 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Move project from PyCharm to CLion" />
-    <option name="LAST_COMMIT_MESSAGE" value="Move project from PyCharm to CLion" />
+    <MESSAGE value="Project admin updates" />
+    <option name="LAST_COMMIT_MESSAGE" value="Project admin updates" />
   </component>
   <component name="WindowStateProjectService">
     <state x="365" y="248" width="1180" height="617" key="#All_Tests" timestamp="1587980753063">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
     <state x="365" y="248" width="1180" height="617" key="#All_Tests/0.27.1920.1053@0.27.1920.1053" timestamp="1587980753063" />
-    <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1587984615934">
+    <state x="636" y="154" width="638" height="778" key="#Docker_Image" timestamp="1592219972416">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="636" y="154" width="638" height="778" key="#Docker_Image/1920.0.1920.1080/0.27.1920.1053@0.27.1920.1053" timestamp="1592219972416" />
+    <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1592220009709">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
     <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1587984615934" />
+    <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/1920.0.1920.1080/0.27.1920.1053@0.27.1920.1053" timestamp="1592220009709" />
     <state width="1872" height="255" key="GridCell.Tab.0.bottom" timestamp="1588019810824">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
@@ -218,5 +260,9 @@
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
     <state x="555" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2/0.27.1920.1053@0.27.1920.1053" timestamp="1588011895516" />
+    <state x="862" y="461" width="764" height="402" key="com.intellij.docker.deployment.ui.DockerVolumeBindingsField.v173.dialogSize" timestamp="1592220004437">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="862" y="461" width="764" height="402" key="com.intellij.docker.deployment.ui.DockerVolumeBindingsField.v173.dialogSize/1920.0.1920.1080/0.27.1920.1053@0.27.1920.1053" timestamp="1592220004437" />
   </component>
 </project>
