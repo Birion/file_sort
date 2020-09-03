@@ -1,44 +1,28 @@
-use std::fs;
+use std::error::Error;
 use std::path::PathBuf;
 
-use app_dirs2::{app_dir, AppDataType, AppInfo};
-use serde_yaml::from_str;
+use clap::ArgMatches;
 
-use crate::config::Config;
-use crate::processor::process_file;
+use comic_sort::{get_matches, process_file, read_config};
+use comic_sort::structs::Config;
 
-mod config;
-mod processor;
+fn main() -> Result<(), Box<dyn Error>> {
+    let matches: ArgMatches = get_matches()?;
+    let config_file: &str = matches.value_of("config").unwrap();
 
-const APP_INFO: AppInfo = AppInfo { name: "comic_sort", author: "Ondřej Vágner" };
+    let file: PathBuf = read_config(PathBuf::from(config_file))?;
 
+    let mut config: Config = Config::load(file)?;
 
-fn main() {
-    let file: Option<PathBuf> = Some({
-        let name: PathBuf = PathBuf::from("config.yaml");
-
-        if !&name.exists() {
-            let folder: PathBuf = app_dir(AppDataType::UserConfig, &APP_INFO, "/").unwrap();
-            folder.join(&name)
-        } else {
-            name
-        }
-    });
-
-    let mut config: Config = from_str(
-    fs::read_to_string(file.unwrap().to_str().unwrap()).unwrap().as_str())
-        .expect("Couldn't read YAML file");
-
-    config.files = config.get_files().expect("Couldn't read the download folder");
+    let _ = config.get_files().expect("Couldn't read the download folder");
 
     for mapping in &mut config.mappings {
         let _ = mapping.make_patterns();
     }
 
     for file in &config.files {
-        process_file(
-            file,
-            &config
-        ).unwrap();
-    }
+        process_file(file, &config).unwrap();
+    };
+
+    Ok(())
 }
