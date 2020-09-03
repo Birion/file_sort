@@ -30,10 +30,13 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="49fdc590-c0aa-489e-961d-6ceb564bd8b0" name="Default Changelist" comment="">
+    <list default="true" id="49fdc590-c0aa-489e-961d-6ceb564bd8b0" name="Default Changelist" comment="Version bump">
+      <change afterPath="$PROJECT_DIR$/src/lib.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/processor.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/processor.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/processor.rs" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +53,9 @@
     <option name="directoryName" value="wh0rz6gm" />
   </component>
   <component name="ProjectId" id="1b7QPsKuqHEk0wdEaUALh7FL7MC" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -59,7 +65,9 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="add_unversioned_files" value="$PROJECT_DIR$/config.yaml" />
     <property name="cf.first.check.clang-format" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -68,6 +76,11 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
   </component>
   <component name="RunManager" selected="Cargo Command.Run comic_sort">
     <configuration name="All Tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
@@ -104,6 +117,11 @@
       <envs />
       <method v="2">
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="Docker Image" type="docker-deploy" factoryName="docker-image" temporary="true" server-name="Docker">
@@ -167,7 +185,9 @@
       <workItem from="1590137351860" duration="1176000" />
       <workItem from="1592219745906" duration="2778000" />
       <workItem from="1596793327559" duration="53000" />
-      <workItem from="1598610660787" duration="647000" />
+      <workItem from="1598610660787" duration="781000" />
+      <workItem from="1598612854790" duration="773000" />
+      <workItem from="1599122371200" duration="7980000" />
     </task>
     <task id="LOCAL-00001" summary="Move project from PyCharm to CLion">
       <created>1588008926119</created>
@@ -183,7 +203,21 @@
       <option name="project" value="LOCAL" />
       <updated>1592219777636</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Coloured output">
+      <created>1598611365777</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1598611365777</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Version bump">
+      <created>1598611383778</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1598611383778</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -204,13 +238,11 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Move project from PyCharm to CLion" />
     <MESSAGE value="Project admin updates" />
-    <option name="LAST_COMMIT_MESSAGE" value="Project admin updates" />
+    <MESSAGE value="Coloured output" />
+    <MESSAGE value="Version bump" />
+    <option name="LAST_COMMIT_MESSAGE" value="Version bump" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="365" y="248" width="1180" height="617" key="#All_Tests" timestamp="1587980753063">
-      <screen x="0" y="27" width="1920" height="1053" />
-    </state>
-    <state x="365" y="248" width="1180" height="617" key="#All_Tests/0.27.1920.1053@0.27.1920.1053" timestamp="1587980753063" />
     <state x="636" y="154" width="638" height="778" key="#Docker_Image" timestamp="1592219972416">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
@@ -218,51 +250,46 @@
     <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1592220009709">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1587984615934" />
     <state x="418" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/1920.0.1920.1080/0.27.1920.1053@0.27.1920.1053" timestamp="1592220009709" />
-    <state width="1872" height="255" key="GridCell.Tab.0.bottom" timestamp="1588019810824">
+    <state x="768" y="272" width="374" height="569" key="#com.intellij.ide.util.MemberChooser" timestamp="1599126363271">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="255" key="GridCell.Tab.0.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1588019810824" />
-    <state width="1872" height="255" key="GridCell.Tab.0.center" timestamp="1588019810824">
+    <state x="768" y="272" width="374" height="569" key="#com.intellij.ide.util.MemberChooser/0.27.1920.1053@0.27.1920.1053" timestamp="1599126363271" />
+    <state x="693" y="301" width="524" height="511" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1599123618833">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="255" key="GridCell.Tab.0.center/0.27.1920.1053@0.27.1920.1053" timestamp="1588019810824" />
-    <state width="1872" height="255" key="GridCell.Tab.0.left" timestamp="1588019810824">
+    <state x="693" y="301" width="524" height="511" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1599123618833" />
+    <state width="1872" height="246" key="GridCell.Tab.0.bottom" timestamp="1599131361681">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="255" key="GridCell.Tab.0.left/0.27.1920.1053@0.27.1920.1053" timestamp="1588019810824" />
-    <state width="1872" height="255" key="GridCell.Tab.0.right" timestamp="1588019810824">
+    <state width="1872" height="246" key="GridCell.Tab.0.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1599131361681" />
+    <state width="1872" height="246" key="GridCell.Tab.0.center" timestamp="1599131361681">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="255" key="GridCell.Tab.0.right/0.27.1920.1053@0.27.1920.1053" timestamp="1588019810824" />
-    <state width="1872" height="338" key="GridCell.Tab.1.bottom" timestamp="1587982217680">
+    <state width="1872" height="246" key="GridCell.Tab.0.center/0.27.1920.1053@0.27.1920.1053" timestamp="1599131361681" />
+    <state width="1872" height="246" key="GridCell.Tab.0.left" timestamp="1599131361681">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="338" key="GridCell.Tab.1.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1587982217680" />
-    <state width="1872" height="338" key="GridCell.Tab.1.center" timestamp="1587982217680">
+    <state width="1872" height="246" key="GridCell.Tab.0.left/0.27.1920.1053@0.27.1920.1053" timestamp="1599131361681" />
+    <state width="1872" height="246" key="GridCell.Tab.0.right" timestamp="1599131361681">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="338" key="GridCell.Tab.1.center/0.27.1920.1053@0.27.1920.1053" timestamp="1587982217680" />
-    <state width="1872" height="338" key="GridCell.Tab.1.left" timestamp="1587982217680">
+    <state width="1872" height="246" key="GridCell.Tab.0.right/0.27.1920.1053@0.27.1920.1053" timestamp="1599131361681" />
+    <state x="456" y="188" key="SettingsEditor" timestamp="1598611410484">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="338" key="GridCell.Tab.1.left/0.27.1920.1053@0.27.1920.1053" timestamp="1587982217680" />
-    <state width="1872" height="338" key="GridCell.Tab.1.right" timestamp="1587982217680">
+    <state x="456" y="188" key="SettingsEditor/0.27.1920.1053@0.27.1920.1053" timestamp="1598611410484" />
+    <state x="555" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1598611432374">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state width="1872" height="338" key="GridCell.Tab.1.right/0.27.1920.1053@0.27.1920.1053" timestamp="1587982217680" />
-    <state x="672" y="141" width="1007" height="737" key="SettingsEditor" timestamp="1588012293420">
-      <screen x="0" y="27" width="1920" height="1053" />
-    </state>
-    <state x="672" y="141" width="1007" height="737" key="SettingsEditor/0.27.1920.1053@0.27.1920.1053" timestamp="1588012293420" />
-    <state x="555" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1588011895516">
-      <screen x="0" y="27" width="1920" height="1053" />
-    </state>
-    <state x="555" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2/0.27.1920.1053@0.27.1920.1053" timestamp="1588011895516" />
+    <state x="555" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2/0.27.1920.1053@0.27.1920.1053" timestamp="1598611432374" />
     <state x="862" y="461" width="764" height="402" key="com.intellij.docker.deployment.ui.DockerVolumeBindingsField.v173.dialogSize" timestamp="1592220004437">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
     <state x="862" y="461" width="764" height="402" key="com.intellij.docker.deployment.ui.DockerVolumeBindingsField.v173.dialogSize/1920.0.1920.1080/0.27.1920.1053@0.27.1920.1053" timestamp="1592220004437" />
+    <state x="623" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1599122467850">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="623" y="259" width="672" height="678" key="search.everywhere.popup/0.27.1920.1053@0.27.1920.1053" timestamp="1599122467850" />
   </component>
 </project>
