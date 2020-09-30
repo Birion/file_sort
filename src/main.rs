@@ -3,14 +3,18 @@ use std::path::PathBuf;
 
 use clap::ArgMatches;
 
-use comic_sort::{get_matches, process_file, read_config};
-use comic_sort::structs::Config;
+use crate::lib::get_matches;
+use crate::lib::structs::Config;
+use crate::lib::config;
+use crate::lib::processing::process;
+
+mod lib;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let matches: ArgMatches = get_matches()?;
     let config_file: &str = matches.value_of("config").unwrap();
 
-    let file: PathBuf = read_config(PathBuf::from(config_file))?;
+    let file: PathBuf = config::read(PathBuf::from(config_file))?;
 
     let mut config: Config = Config::load(file)?;
 
@@ -21,7 +25,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     for file in &config.files {
-        process_file(file, &config).unwrap();
+        process(file, &config).unwrap();
     };
 
     Ok(())
