@@ -12,14 +12,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut config: Config = Config::load(file)?;
 
-    let _ = config.get_files().expect("Couldn't read the download folder");
+    config.get_files().expect("Couldn't read the download folder");
 
     for mapping in &mut config.mappings {
         let _ = mapping.make_patterns();
     }
 
     for file in &config.files {
-        &config.process(file);
+        let _ = config.process(file);
     };
 
     Ok(())

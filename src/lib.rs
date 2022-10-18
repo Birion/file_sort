@@ -42,16 +42,16 @@ mod structs {
     use std::error::Error;
     use std::fs;
     use std::fs::{create_dir_all, rename};
-    use std::path::{PathBuf, Path};
+    use std::path::{Path, PathBuf};
 
     use chrono::{TimeZone, Utc};
+    use colored::Colorize;
     use glob::glob;
     use regex::{Captures, Match, Regex};
     use serde::Deserialize;
     use serde_yaml::from_str;
 
     use super::parser::*;
-    use colored::Colorize;
 
     #[derive(Deserialize, Debug)]
     pub struct Config {
@@ -87,21 +87,21 @@ mod structs {
 
             for mapping in &self.mappings {
                 let map_pattern: Regex = Regex::new(mapping.old_pattern.as_str())?;
-                if map_pattern.is_match(&processor.filename()) {
+                if map_pattern.is_match(processor.filename()) {
                     processor.make_target_dir(&self.root, &mapping.directory);
 
                     let source: &Path = &self.download.join(processor.filename());
 
                     let target = match &mapping.function {
                         None => {
-                            processor.make_dst(&mapping.new_pattern, &self.root, &mapping)
+                            processor.make_dst(&mapping.new_pattern, &self.root, mapping)
                         }
                         Some(func) => match func.as_str() {
                             "bloomin_faeries" => {
                                 processor.bloomin_fairies()?
                             }
                             &_ => {
-                                processor.make_dst(&mapping.new_pattern, &self.root, &mapping)
+                                processor.make_dst(&mapping.new_pattern, &self.root, mapping)
                             }
                         }
                     };
@@ -186,7 +186,7 @@ mod structs {
             self.file.file_name().unwrap().to_str().unwrap()
         }
 
-        fn parse_dir(&self, directory: &PathBuf) -> Result<PathBuf, Box<dyn Error>> {
+        fn parse_dir(&self, directory: &Path) -> Result<PathBuf, Box<dyn Error>> {
             let replacement_pattern: Regex = Regex::new(r".*<(.*)>.*").unwrap();
             let dir: &str = directory.to_str().unwrap();
             if !replacement_pattern.is_match(dir) {
@@ -197,7 +197,7 @@ mod structs {
                 .captures(replacement.as_str()).unwrap().get(1);
             let rg: Vec<usize> = found_group
                 .map(|res| res.as_str()).unwrap().split(':')
-                .map(|res| res.parse::<usize>().unwrap()).collect();
+                .map(|res| res.parse().unwrap()).collect();
 
             let start: usize = rg[0];
             let finish: usize = rg[0] + rg[1];
@@ -226,14 +226,14 @@ mod structs {
             Ok(result)
         }
 
-        fn make_target_dir(&mut self, root: &PathBuf, folder: &PathBuf) -> &mut Processor {
+        fn make_target_dir(&mut self, root: &Path, folder: &PathBuf) -> &mut Processor {
             let folder = root.join(folder);
             self.target = self.parse_dir(&folder).unwrap();
             let _ = create_dir_all(&self.target);
             self
         }
 
-        fn make_dst(&self, new_name: &str, root: &PathBuf, mapping: &Mapping) -> PathBuf {
+        fn make_dst(&self, new_name: &str, root: &Path, mapping: &Mapping) -> PathBuf {
             let mut dst: String = self.parse_file(new_name).unwrap();
             let root = root.join(&self.target);
 
@@ -260,7 +260,7 @@ mod structs {
         fn bloomin_fairies(&self) -> Result<PathBuf, Box<dyn Error>> {
             let today = Utc::today().naive_local();
             println!("{:?}", &self.target);
-            let files = glob(&self.target.join("*").to_str().unwrap())?;
+            let files = glob(self.target.join("*").to_str().unwrap())?;
             let f = files.last().unwrap()?;
             let f = f.to_str().unwrap();
             let re = Regex::new(r"20[0-9][0-9]-(0[1-9]|1[0-2])-([012][0-9]|3[01])-BF(?P<count>[0-9]+)(_Heather)?(_color)?.jpg")?;
@@ -286,16 +286,19 @@ mod structs {
 
 mod config {
     use std::error::Error;
+    use std::fs;
     use std::path::PathBuf;
 
-    use app_dirs2::{app_dir, AppDataType};
-
-    use super::APP_INFO;
+    use directories::ProjectDirs;
 
     pub fn read(config: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
         if !&config.exists() {
-            let folder: PathBuf = app_dir(AppDataType::UserConfig, &APP_INFO, "/").unwrap();
-            Ok(folder.join(&config))
+            let folder = ProjectDirs::from("com", "Ondřej Vágner", "comic_sort").unwrap();
+            println!("{:?}", folder.config_dir());
+            if !folder.config_dir().exists() {
+                fs::create_dir_all(folder.config_dir())?;
+            }
+            Ok(folder.config_dir().join(&config))
         } else {
             Ok(config)
         }
@@ -306,7 +309,6 @@ mod utils {
     use std::error::Error;
 
     use clap::{app_from_crate, Arg, ArgMatches, crate_authors, crate_description, crate_name, crate_version};
-
 
     pub fn get_matches() -> Result<ArgMatches<'static>, Box<dyn Error>> {
         let matches: ArgMatches = app_from_crate!()
@@ -320,7 +322,3 @@ mod utils {
         Ok(matches)
     }
 }
-
-use app_dirs2::AppInfo;
-
-const APP_INFO: AppInfo = AppInfo { name: "comic_sort", author: "Ondřej Vágner" };
