@@ -12,7 +12,7 @@ build-linux:
     docker run -v cargo-cache:/root/.cargo/registry -v "$PWD:/volume" --rm -it clux/muslrust chown -R $(id -u):$(id -g) target
 
 build-windows:
-    cross build --release --target {{target-windows}}
+    cargo build --release --target {{target-windows}}
 
 strip-linux: build-linux
     strip -d target/{{target-linux}}/release/{{name}}

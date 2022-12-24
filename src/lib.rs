@@ -11,19 +11,31 @@ mod parser {
     use serde::{Deserialize, Deserializer};
     use shellexpand::tilde;
 
+    fn process_path(path: &str) -> String {
+        let mut p: String = tilde(path).to_string();
+        if p.ends_with(':') {
+            p += "\\";
+        };
+        p
+    }
+
     pub fn from_array<'de, D>(deserializer: D) -> Result<PathBuf, D::Error>
         where D: Deserializer<'de> {
         let p: Vec<String> = Deserialize::deserialize(deserializer)?;
 
-        fn process_path(path: &str) -> String {
-            let mut p: String = tilde(path).to_string();
-            if p.ends_with(':') {
-                p += "\\";
-            };
-            p
-        }
-
         Ok(p.iter().map(|res| process_path(res.as_str())).collect())
+    }
+
+    pub fn from_array_opt<'de, D>(deserializer: D) -> Result<Option<PathBuf>, D::Error>
+        where D: Deserializer<'de> {
+        let p: Option<Vec<String>> = Deserialize::deserialize(deserializer)?;
+
+        match p {
+            None => { Ok(None) }
+            Some(p) => {
+                Ok(Some(p.iter().map(|res| process_path(res.as_str())).collect()))
+            }
+        }
     }
 
     pub fn to_regex<'de, D>(deserializer: D) -> Result<Regex, D::Error>
@@ -31,6 +43,18 @@ mod parser {
         let s: String = Deserialize::deserialize(deserializer)?;
         let r: Regex = Regex::new(s.as_str()).unwrap();
         Ok(r)
+    }
+
+    pub fn from_arrays<'de, D>(deserializer: D) -> Result<Vec<PathBuf>, D::Error>
+        where D: Deserializer<'de> {
+        let p: Vec<Vec<String>> = Deserialize::deserialize(deserializer)?;
+        let mut res: Vec<PathBuf> = vec![];
+
+        for x in p {
+            res.push(x.iter().map(|x| process_path(x.as_str())).collect())
+        }
+
+        Ok(res)
     }
 
     pub fn default_merger() -> Option<String> {
@@ -55,8 +79,8 @@ mod structs {
 
     #[derive(Deserialize, Debug)]
     pub struct Config {
-        #[serde(deserialize_with = "from_array")]
-        pub root: PathBuf,
+        #[serde(deserialize_with = "from_arrays")]
+        pub root: Vec<PathBuf>,
         #[serde(deserialize_with = "from_array")]
         pub download: PathBuf,
         pub mappings: Vec<Mapping>,
@@ -86,22 +110,24 @@ mod structs {
             let mut processor: Processor = Processor::new(file);
 
             for mapping in &self.mappings {
+                let root = &self.root[mapping.root];
                 let map_pattern: Regex = Regex::new(mapping.old_pattern.as_str())?;
                 if map_pattern.is_match(processor.filename()) {
-                    processor.make_target_dir(&self.root, &mapping.directory);
+                    let dir = match mapping.directory.clone() {
+                        None => { PathBuf::from(&mapping.title) }
+                        Some(d) => { d }
+                    };
+                    processor.make_target_dir(root, &dir);
 
                     let source: &Path = &self.download.join(processor.filename());
 
                     let target = match &mapping.function {
                         None => {
-                            processor.make_dst(&mapping.new_pattern, &self.root, mapping)
+                            processor.make_dst(&mapping.new_pattern, root, mapping)?
                         }
                         Some(func) => match func.as_str() {
-                            "bloomin_faeries" => {
-                                processor.bloomin_fairies()?
-                            }
                             &_ => {
-                                processor.make_dst(&mapping.new_pattern, &self.root, mapping)
+                                processor.make_dst(&mapping.new_pattern, root, mapping)?
                             }
                         }
                     };
@@ -131,10 +157,13 @@ mod structs {
         pub title: String,
         #[serde(deserialize_with = "to_regex")]
         pub pattern: Regex,
-        #[serde(deserialize_with = "from_array")]
-        pub directory: PathBuf,
+        #[serde(default)]
+        #[serde(deserialize_with = "from_array_opt")]
+        pub directory: Option<PathBuf>,
         pub function: Option<String>,
         pub processors: Option<ConfigProcessor>,
+        #[serde(default)]
+        pub root: usize,
         #[serde(skip_deserializing)]
         pub old_pattern: String,
         #[serde(skip_deserializing)]
@@ -169,6 +198,7 @@ mod structs {
         pub replacement: Option<String>,
     }
 
+    #[derive(Debug)]
     pub(crate) struct Processor {
         file: PathBuf,
         target: PathBuf,
@@ -233,53 +263,40 @@ mod structs {
             self
         }
 
-        fn make_dst(&self, new_name: &str, root: &Path, mapping: &Mapping) -> PathBuf {
-            let mut dst: String = self.parse_file(new_name).unwrap();
+        fn make_dst(&self, new_name: &str, root: &Path, mapping: &Mapping) -> Result<PathBuf, Box<dyn Error>> {
+            let mut dst: String = self.parse_file(new_name)?;
             let root = root.join(&self.target);
 
             if mapping.processors.is_some() {
-                let p: Option<&ConfigProcessor> = mapping.processors.as_ref();
-                if p.unwrap().splitter.is_some() {
-                    let parts: Vec<&str> = dst.split(p.unwrap().splitter.as_ref().unwrap().as_str())
-                        .collect();
-                    let creation_date: String = Utc.timestamp(parts[0].parse().unwrap(), 0)
-                        .format(p.unwrap().format.as_ref().unwrap().as_str()).to_string();
-                    dst = vec![creation_date.as_str(), parts[1]]
-                        .join(p.unwrap().merger.as_ref().unwrap().as_str());
-                }
-                if p.unwrap().pattern.is_some() {
-                    let pat = p.unwrap().pattern.as_ref().unwrap();
-                    dst = pat.replace(dst.as_str(),
-                                      p.unwrap().replacement.as_ref().unwrap().as_str());
+                let processor = &mapping.processors;
+                if let Some(p) = processor {
+                    let fmt = p.format.as_ref().unwrap();
+                    if let Some(splitter) = &p.splitter {
+                        let parts: Vec<&str> =
+                            if splitter.contains('%') {
+                                let mut dt = Utc::today();
+                                let mut _fmt = dt.format(splitter).to_string();
+                                while !dst.contains(&_fmt) {
+                                    dt = dt.pred();
+                                    _fmt = dt.format(splitter).to_string();
+                                }
+                                dst.split(&_fmt).collect()
+                            } else {
+                                dst.split(splitter).collect()
+                            };
+                        let creation_date: String = Utc.timestamp(parts[0].parse().unwrap(), 0)
+                            .format(fmt).to_string();
+                        dst = vec![creation_date.as_str(), parts[1]]
+                            .join(p.merger.as_ref().unwrap().as_str());
+                    }
+                    if let Some(pattern) = &p.pattern {
+                        let replacement = p.replacement.as_ref().unwrap();
+                        dst = pattern.replace(dst.as_str(), replacement);
+                    }
                 }
             }
 
-            root.join(PathBuf::from(dst))
-        }
-
-        fn bloomin_fairies(&self) -> Result<PathBuf, Box<dyn Error>> {
-            let today = Utc::today().naive_local();
-            println!("{:?}", &self.target);
-            let files = glob(self.target.join("*").to_str().unwrap())?;
-            let f = files.last().unwrap()?;
-            let f = f.to_str().unwrap();
-            let re = Regex::new(r"20[0-9][0-9]-(0[1-9]|1[0-2])-([012][0-9]|3[01])-BF(?P<count>[0-9]+)(_Heather)?(_color)?.jpg")?;
-            let l = match re.captures(f) {
-                None => {
-                    0
-                }
-                Some(res) => {
-                    res.name("count").unwrap().as_str().parse()?
-                }
-            };
-
-            let filename = format!(
-                "{today}_BF{count}_Heather.jpg",
-                today = today,
-                count = l + 1
-            );
-
-            Ok(self.target.join(filename))
+            Ok(root.join(PathBuf::from(dst)))
         }
     }
 }
@@ -294,7 +311,6 @@ mod config {
     pub fn read(config: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
         if !&config.exists() {
             let folder = ProjectDirs::from("com", "Ondřej Vágner", "comic_sort").unwrap();
-            println!("{:?}", folder.config_dir());
             if !folder.config_dir().exists() {
                 fs::create_dir_all(folder.config_dir())?;
             }
