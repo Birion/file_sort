@@ -1,6 +1,6 @@
 [package]
 name = "comic_sort"
-version = "1.8.2"
+version = "1.9.0"
 authors = ["Ondřej Vágner <ondrej.vagner@gmail.com>"]
 edition = "2021"
 description = "Moves webcomic files into their appropriate folders"
