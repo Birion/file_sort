@@ -1,3 +1,5 @@
+extern crate core;
+
 pub mod prelude {
     pub use super::config::read;
     pub use super::structs::{Config, Mapping};
@@ -62,6 +64,60 @@ mod parser {
     }
 }
 
+mod enums {
+    use std::error::Error;
+    use std::path::{Path, PathBuf};
+    use serde::Deserialize;
+    use glob::glob;
+
+    #[derive(Deserialize, Debug)]
+    #[serde(rename_all = "lowercase")]
+    #[serde(tag = "name")]
+    pub enum Function {
+        Last { args: Option<Vec<String>> },
+        First { args: Option<Vec<String>> },
+    }
+
+    impl Function {
+        pub fn get_dir(&self, root: &Path) -> Result<PathBuf, Box<dyn Error>> {
+            let mut path: PathBuf = root.into();
+            let args = match self {
+                Function::Last { args } => {
+                    args
+                }
+                Function::First { args } => {
+                    args
+                }
+            };
+            let dirs = match args {
+                None => {
+                    String::new()
+                }
+                Some(a) => {
+                    a.join("/")
+                }
+            };
+            path.push(dirs);
+
+            let results: Vec<PathBuf> = glob(path.to_str().unwrap())?.into_iter()
+                .map(|x| x.unwrap()).collect();
+
+            if results.is_empty() {
+                panic!("Couldn't find any folders fitting the pattern {}", path.to_str().unwrap())
+            }
+
+            match self {
+                Function::Last { .. } => {
+                    Ok(results[results.len() - 1].clone())
+                }
+                Function::First { .. } => {
+                    Ok(results[0].clone())
+                }
+            }
+        }
+    }
+}
+
 mod structs {
     use std::error::Error;
     use std::fs;
@@ -76,6 +132,7 @@ mod structs {
     use serde_yaml::from_str;
 
     use super::parser::*;
+    use super::enums::*;
 
     #[derive(Deserialize, Debug)]
     pub struct Config {
@@ -123,11 +180,14 @@ mod structs {
 
                     let target = match &mapping.function {
                         None => {
-                            processor.make_dst(&mapping.new_pattern, root, mapping)?
+                            processor.make_dst(&mapping.new_pattern, None, mapping)?
                         }
-                        Some(func) => match func.as_str() {
+                        Some(func) => match func {
                             &_ => {
-                                processor.make_dst(&mapping.new_pattern, root, mapping)?
+                                let temp_root = processor
+                                    .make_dst(&mapping.new_pattern, None, mapping)?;
+                                let r = func.get_dir(temp_root.parent().unwrap())?;
+                                processor.make_dst(&mapping.new_pattern, Some(&r), mapping)?
                             }
                         }
                     };
@@ -160,7 +220,7 @@ mod structs {
         #[serde(default)]
         #[serde(deserialize_with = "from_array_opt")]
         pub directory: Option<PathBuf>,
-        pub function: Option<String>,
+        pub function: Option<Function>,
         pub processors: Option<ConfigProcessor>,
         #[serde(default)]
         pub root: usize,
@@ -263,9 +323,12 @@ mod structs {
             self
         }
 
-        fn make_dst(&self, new_name: &str, root: &Path, mapping: &Mapping) -> Result<PathBuf, Box<dyn Error>> {
+        fn make_dst(&self, new_name: &str, root: Option<&Path>, mapping: &Mapping) -> Result<PathBuf, Box<dyn Error>> {
             let mut dst: String = self.parse_file(new_name)?;
-            let root = root.join(&self.target);
+            let root = match root {
+                None => { &self.target }
+                Some(r) => { r }
+            };
 
             if mapping.processors.is_some() {
                 let processor = &mapping.processors;

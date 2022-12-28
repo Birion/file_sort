@@ -1,9 +1,9 @@
 [package]
 name = "comic_sort"
-version = "1.9.0"
+version = "1.10.0"
 authors = ["Ondřej Vágner <ondrej.vagner@gmail.com>"]
 edition = "2021"
-description = "Moves webcomic files into their appropriate folders"
+description = "Moves files into their appropriate folders"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
