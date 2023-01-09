@@ -2,9 +2,11 @@ use std::error::Error;
 use std::path::PathBuf;
 
 use clap::ArgMatches;
+use human_panic::setup_panic;
 use comic_sort::prelude::*;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    setup_panic!();
     let matches: ArgMatches = get_matches()?;
     let config_file: &str = matches.value_of("config").unwrap();
 

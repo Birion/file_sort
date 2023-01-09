@@ -82,28 +82,21 @@ mod enums {
         pub fn get_dir(&self, root: &Path) -> Result<PathBuf, Box<dyn Error>> {
             let mut path: PathBuf = root.into();
             let args = match self {
-                Function::Last { args } => {
-                    args
-                }
-                Function::First { args } => {
-                    args
-                }
+                Function::Last { args } => { args }
+                Function::First { args } => { args }
             };
             let dirs = match args {
-                None => {
-                    String::new()
-                }
-                Some(a) => {
-                    a.join("/")
-                }
+                None => { String::new() }
+                Some(a) => { a.join("/") }
             };
             path.push(dirs);
+            let p = path.to_str().unwrap();
 
-            let results: Vec<PathBuf> = glob(path.to_str().unwrap())?.into_iter()
+            let results: Vec<PathBuf> = glob(p)?.into_iter()
                 .map(|x| x.unwrap()).collect();
 
             if results.is_empty() {
-                panic!("Couldn't find any folders fitting the pattern {}", path.to_str().unwrap())
+                panic!("Couldn't find any folders fitting the pattern {}", p)
             }
 
             match self {
@@ -149,8 +142,8 @@ mod structs {
         pub fn get_files(&mut self) -> Result<(), Box<dyn Error>> {
             for ext in ["jpg", "jpeg", "gif", "png"].iter() {
                 let y: &PathBuf = &self.download.join("*.".to_owned() + ext);
-                for z in glob(y.to_str().unwrap()).unwrap() {
-                    self.files.insert(0, z.unwrap());
+                for z in glob(y.to_str().unwrap())? {
+                    self.files.insert(0, z?);
                 }
             }
             Ok(())
@@ -233,11 +226,11 @@ mod structs {
     impl Mapping {
         pub fn make_patterns(&mut self) -> Result<(), Box<dyn Error>> {
             self.old_pattern = {
-                let x: Regex = Regex::new(r"[<>]").unwrap();
+                let x: Regex = Regex::new(r"[<>]")?;
                 x.replace_all(self.pattern.as_str(), "").to_string()
             };
             self.new_pattern = {
-                let replacement: Regex = Regex::new(r".*<(.*)>.*").unwrap();
+                let replacement: Regex = Regex::new(r".*<(.*)>.*")?;
                 let x: Option<Captures> = replacement.captures(self.pattern.as_str());
                 match x {
                     Some(x) => x.get(1).unwrap().as_str().to_string(),
@@ -277,7 +270,7 @@ mod structs {
         }
 
         fn parse_dir(&self, directory: &Path) -> Result<PathBuf, Box<dyn Error>> {
-            let replacement_pattern: Regex = Regex::new(r".*<(.*)>.*").unwrap();
+            let replacement_pattern: Regex = Regex::new(r".*<(.*)>.*")?;
             let dir: &str = directory.to_str().unwrap();
             if !replacement_pattern.is_match(dir) {
                 return Ok(directory.to_path_buf());
@@ -289,15 +282,14 @@ mod structs {
                 .map(|res| res.as_str()).unwrap().split(':')
                 .map(|res| res.parse().unwrap()).collect();
 
-            let start: usize = rg[0];
-            let finish: usize = rg[0] + rg[1];
-            let replacer: String = String::from(self.filename());
-            let replace_part: &str = replacer[start..finish].as_ref();
+            let start = rg[0];
+            let finish = rg[0] + rg[1];
+            let replacer = String::from(self.filename());
+            let replace_part = replacer[start..finish].to_string();
 
             let new_pattern: Regex = Regex::new(
                 format!("<{}>", found_group.unwrap().as_str()).as_str()
-            )
-                .unwrap();
+            )?;
 
             let dir: String = new_pattern
                 .replace(directory.to_str().unwrap(), replace_part)
@@ -308,7 +300,7 @@ mod structs {
 
         fn parse_file(&self, pattern: &str) -> Result<String, Box<dyn Error>> {
             let mut result: String = self.filename().to_string();
-            let r: Regex = Regex::new(pattern).unwrap();
+            let r: Regex = Regex::new(pattern)?;
             let group: Option<Match> = r.captures(self.filename()).unwrap().get(0);
             if let Some(g) = group {
                 result = g.as_str().to_string();
@@ -316,11 +308,10 @@ mod structs {
             Ok(result)
         }
 
-        fn make_target_dir(&mut self, root: &Path, folder: &PathBuf) -> &mut Processor {
+        fn make_target_dir(&mut self, root: &Path, folder: &PathBuf) {
             let folder = root.join(folder);
             self.target = self.parse_dir(&folder).unwrap();
             let _ = create_dir_all(&self.target);
-            self
         }
 
         fn make_dst(&self, new_name: &str, root: Option<&Path>, mapping: &Mapping) -> Result<PathBuf, Box<dyn Error>> {
@@ -347,7 +338,7 @@ mod structs {
                             } else {
                                 dst.split(splitter).collect()
                             };
-                        let creation_date: String = Utc.timestamp(parts[0].parse().unwrap(), 0)
+                        let creation_date: String = Utc.timestamp(parts[0].parse()?, 0)
                             .format(fmt).to_string();
                         dst = vec![creation_date.as_str(), parts[1]]
                             .join(p.merger.as_ref().unwrap().as_str());
