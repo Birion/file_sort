@@ -13,6 +13,9 @@ mod parser {
     use serde::{Deserialize, Deserializer};
     use shellexpand::tilde;
 
+    use super::enums::Mappings;
+    use super::structs::Mapping;
+
     fn process_path(path: &str) -> String {
         let mut p: String = tilde(path).to_string();
         if p.ends_with(':') {
@@ -59,6 +62,26 @@ mod parser {
         Ok(res)
     }
 
+    pub fn parse_mappings<'de, D>(deserializer: D) -> Result<Vec<Mapping>, D::Error>
+        where D: Deserializer<'de> {
+        let p: Mappings = Deserialize::deserialize(deserializer)?;
+        let mut res: Vec<Mapping> = vec![];
+        match p {
+            Mappings::Mapping(m) => {
+                res.extend(m)
+            }
+            Mappings::Root(r) => {
+                for (idx, root) in r.into_iter().enumerate() {
+                    for mut map in root {
+                        map.root = idx;
+                        res.push(map);
+                    }
+                }
+            }
+        }
+        Ok(res)
+    }
+
     pub fn default_merger() -> Option<String> {
         Some(String::from("-"))
     }
@@ -67,10 +90,12 @@ mod parser {
 mod enums {
     use std::error::Error;
     use std::path::{Path, PathBuf};
-    use serde::Deserialize;
-    use glob::glob;
 
-    #[derive(Deserialize, Debug)]
+    use glob::glob;
+    use serde::Deserialize;
+    use crate::structs::Mapping;
+
+    #[derive(Deserialize, Debug, Clone)]
     #[serde(rename_all = "lowercase")]
     #[serde(tag = "name")]
     pub enum Function {
@@ -85,18 +110,21 @@ mod enums {
                 Function::Last { args } => { args }
                 Function::First { args } => { args }
             };
-            let dirs = match args {
-                None => { String::new() }
-                Some(a) => { a.join("/") }
-            };
-            path.push(dirs);
+            match args {
+                Some(arg) => {
+                    for x in arg {
+                        path.push(x)
+                    }
+                }
+                None => { path.push("*") }
+            }
             let p = path.to_str().unwrap();
 
-            let results: Vec<PathBuf> = glob(p)?.into_iter()
+            let results: Vec<PathBuf> = glob(p)?
                 .map(|x| x.unwrap()).collect();
 
             if results.is_empty() {
-                panic!("Couldn't find any folders fitting the pattern {}", p)
+                panic!("Couldn't find any folders fitting the pattern {p}")
             }
 
             match self {
@@ -108,6 +136,13 @@ mod enums {
                 }
             }
         }
+    }
+
+    #[derive(Deserialize, Debug)]
+    #[serde(untagged)]
+    pub enum Mappings {
+        Mapping(Vec<Mapping>),
+        Root(Vec<Vec<Mapping>>)
     }
 }
 
@@ -124,8 +159,8 @@ mod structs {
     use serde::Deserialize;
     use serde_yaml::from_str;
 
-    use super::parser::*;
     use super::enums::*;
+    use super::parser::*;
 
     #[derive(Deserialize, Debug)]
     pub struct Config {
@@ -133,6 +168,7 @@ mod structs {
         pub root: Vec<PathBuf>,
         #[serde(deserialize_with = "from_array")]
         pub download: PathBuf,
+        #[serde(deserialize_with = "parse_mappings")]
         pub mappings: Vec<Mapping>,
         #[serde(skip_deserializing)]
         pub files: Vec<PathBuf>,
@@ -205,7 +241,7 @@ mod structs {
         }
     }
 
-    #[derive(Deserialize, Debug)]
+    #[derive(Deserialize, Debug, Clone)]
     pub struct Mapping {
         pub title: String,
         #[serde(deserialize_with = "to_regex")]
@@ -241,7 +277,7 @@ mod structs {
         }
     }
 
-    #[derive(Deserialize, Debug)]
+    #[derive(Deserialize, Debug, Clone)]
     pub struct ConfigProcessor {
         pub splitter: Option<String>,
         #[serde(default = "default_merger")]
