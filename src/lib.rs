@@ -142,7 +142,7 @@ mod enums {
     #[serde(untagged)]
     pub enum Mappings {
         Mapping(Vec<Mapping>),
-        Root(Vec<Vec<Mapping>>)
+        Root(Vec<Vec<Mapping>>),
     }
 }
 
@@ -431,4 +431,5 @@ mod utils {
             .get_matches();
         Ok(matches)
     }
+
 }
