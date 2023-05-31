@@ -414,12 +414,16 @@ mod config {
 mod utils {
     use std::error::Error;
 
-    use clap::{app_from_crate, Arg, ArgMatches, crate_authors, crate_description, crate_name, crate_version};
+    use clap::{command, Arg, ArgMatches, crate_authors, crate_description, crate_name, crate_version};
 
-    pub fn get_matches() -> Result<ArgMatches<'static>, Box<dyn Error>> {
-        let matches: ArgMatches = app_from_crate!()
-            .arg(Arg::with_name("config")
-                .short("c")
+    pub fn get_matches() -> Result<ArgMatches, Box<dyn Error>> {
+        let matches: ArgMatches = command!()
+            .author(crate_authors!())
+            .about(crate_description!())
+            .name(crate_name!())
+            .version(crate_version!())
+            .arg(Arg::new("config")
+                .short('c')
                 .long("config")
                 .help("Read from a specific config file")
                 .default_value("config.yaml")

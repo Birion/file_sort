@@ -8,7 +8,7 @@ use comic_sort::prelude::*;
 fn main() -> Result<(), Box<dyn Error>> {
     setup_panic!();
     let matches: ArgMatches = get_matches()?;
-    let config_file: &str = matches.value_of("config").unwrap();
+    let config_file: &str = matches.get_one::<String>("config").unwrap();
 
     let file: PathBuf = read(PathBuf::from(config_file))?;
 
