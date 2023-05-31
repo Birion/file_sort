@@ -24,5 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let _ = config.process(file);
     };
 
+    dont_disappear::enter_to_continue::default();
+
     Ok(())
 }
