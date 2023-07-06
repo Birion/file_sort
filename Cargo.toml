@@ -1,6 +1,6 @@
 [package]
 name = "comic_sort"
-version = "1.12.0"
+version = "1.13.0"
 authors = ["Ondřej Vágner <ondrej.vagner@gmail.com>"]
 edition = "2021"
 description = "Moves files into their appropriate folders"
