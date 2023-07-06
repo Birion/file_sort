@@ -46,8 +46,7 @@ mod parser {
     pub fn to_regex<'de, D>(deserializer: D) -> Result<Regex, D::Error>
         where D: Deserializer<'de> {
         let s: String = Deserialize::deserialize(deserializer)?;
-        let r: Regex = Regex::new(s.as_str()).unwrap();
-        Ok(r)
+        Ok(Regex::new(s.as_str()).unwrap())
     }
 
     pub fn from_arrays<'de, D>(deserializer: D) -> Result<Vec<PathBuf>, D::Error>
@@ -62,19 +61,37 @@ mod parser {
         Ok(res)
     }
 
+    fn map_patterns_to_mappings(mut mapping: Mapping) -> anyhow::Result<Vec<Mapping>> {
+        let mut mappings: Vec<Mapping> = vec![];
+        if let Some(ref patterns) = mapping.patterns {
+            for pattern in patterns {
+                let r = Regex::new(pattern.as_str())?;
+                mapping.pattern = r;
+                mappings.push(mapping.clone())
+            }
+        } else {
+            mappings.push(mapping)
+        }
+        Ok(mappings)
+    }
+
     pub fn parse_mappings<'de, D>(deserializer: D) -> Result<Vec<Mapping>, D::Error>
         where D: Deserializer<'de> {
         let p: Mappings = Deserialize::deserialize(deserializer)?;
         let mut res: Vec<Mapping> = vec![];
         match p {
             Mappings::Mapping(m) => {
-                res.extend(m)
+                for mapping in m {
+                    let all_pattern_mappings = map_patterns_to_mappings(mapping).unwrap();
+                    res.extend(all_pattern_mappings)
+                }
             }
             Mappings::Root(r) => {
                 for (idx, root) in r.into_iter().enumerate() {
                     for mut map in root {
                         map.root = idx;
-                        res.push(map);
+                        let all_pattern_mappings = map_patterns_to_mappings(map).unwrap();
+                        res.extend(all_pattern_mappings)
                     }
                 }
             }
@@ -88,11 +105,12 @@ mod parser {
 }
 
 mod enums {
-    use std::error::Error;
     use std::path::{Path, PathBuf};
 
+    use anyhow::Result;
     use glob::glob;
     use serde::Deserialize;
+
     use crate::structs::Mapping;
 
     #[derive(Deserialize, Debug, Clone)]
@@ -104,7 +122,7 @@ mod enums {
     }
 
     impl Function {
-        pub fn get_dir(&self, root: &Path) -> Result<PathBuf, Box<dyn Error>> {
+        pub fn get_dir(&self, root: &Path) -> Result<PathBuf> {
             let mut path: PathBuf = root.into();
             let args = match self {
                 Function::Last { args } => { args }
@@ -147,11 +165,11 @@ mod enums {
 }
 
 mod structs {
-    use std::error::Error;
     use std::fs;
     use std::fs::{create_dir_all, rename};
     use std::path::{Path, PathBuf};
 
+    use anyhow::Result;
     use chrono::{TimeZone, Utc};
     use colored::Colorize;
     use glob::glob;
@@ -175,8 +193,8 @@ mod structs {
     }
 
     impl Config {
-        pub fn get_files(&mut self) -> Result<(), Box<dyn Error>> {
-            for ext in ["jpg", "jpeg", "gif", "png"].iter() {
+        pub fn get_files(&mut self) -> Result<()> {
+            for ext in ["jpg", "jpeg", "gif", "png", "*"].iter() {
                 let y: &PathBuf = &self.download.join("*.".to_owned() + ext);
                 for z in glob(y.to_str().unwrap())? {
                     self.files.insert(0, z?);
@@ -185,14 +203,14 @@ mod structs {
             Ok(())
         }
 
-        pub fn load(file: PathBuf) -> Result<Config, Box<dyn Error>> {
+        pub fn load(file: PathBuf) -> Result<Config> {
             let config: Config = from_str(
                 fs::read_to_string(file.to_str().unwrap())?.as_str())
                 .expect("Couldn't read YAML file");
             Ok(config)
         }
 
-        pub fn process(&self, file: &Path) -> Result<(), Box<dyn Error>> {
+        pub fn process(&self, file: &Path) -> Result<()> {
             let mut processor: Processor = Processor::new(file);
 
             for mapping in &self.mappings {
@@ -215,7 +233,7 @@ mod structs {
                             &_ => {
                                 let temp_root = processor
                                     .make_dst(&mapping.new_pattern, None, mapping)?;
-                                let r = func.get_dir(temp_root.parent().unwrap())?;
+                                let r = func.get_dir(temp_root.parent().unwrap()).unwrap();
                                 processor.make_dst(&mapping.new_pattern, Some(&r), mapping)?
                             }
                         }
@@ -246,6 +264,7 @@ mod structs {
         pub title: String,
         #[serde(deserialize_with = "to_regex")]
         pub pattern: Regex,
+        pub patterns: Option<Vec<String>>,
         #[serde(default)]
         #[serde(deserialize_with = "from_array_opt")]
         pub directory: Option<PathBuf>,
@@ -260,17 +279,18 @@ mod structs {
     }
 
     impl Mapping {
-        pub fn make_patterns(&mut self) -> Result<(), Box<dyn Error>> {
+        pub fn make_patterns(&mut self) -> Result<()> {
+            let pattern = &self.pattern;
             self.old_pattern = {
                 let x: Regex = Regex::new(r"[<>]")?;
-                x.replace_all(self.pattern.as_str(), "").to_string()
+                x.replace_all(pattern.as_str(), "").to_string()
             };
             self.new_pattern = {
                 let replacement: Regex = Regex::new(r".*<(.*)>.*")?;
-                let x: Option<Captures> = replacement.captures(self.pattern.as_str());
+                let x: Option<Captures> = replacement.captures(pattern.as_str());
                 match x {
                     Some(x) => x.get(1).unwrap().as_str().to_string(),
-                    None => self.pattern.to_string()
+                    None => pattern.to_string()
                 }
             };
             Ok(())
@@ -305,7 +325,7 @@ mod structs {
             self.file.file_name().unwrap().to_str().unwrap()
         }
 
-        fn parse_dir(&self, directory: &Path) -> Result<PathBuf, Box<dyn Error>> {
+        fn parse_dir(&self, directory: &Path) -> Result<PathBuf> {
             let replacement_pattern: Regex = Regex::new(r".*<(.*)>.*")?;
             let dir: &str = directory.to_str().unwrap();
             if !replacement_pattern.is_match(dir) {
@@ -334,7 +354,7 @@ mod structs {
             Ok(PathBuf::from(dir))
         }
 
-        fn parse_file(&self, pattern: &str) -> Result<String, Box<dyn Error>> {
+        fn parse_file(&self, pattern: &str) -> Result<String> {
             let mut result: String = self.filename().to_string();
             let r: Regex = Regex::new(pattern)?;
             let group: Option<Match> = r.captures(self.filename()).unwrap().get(0);
@@ -350,7 +370,7 @@ mod structs {
             let _ = create_dir_all(&self.target);
         }
 
-        fn make_dst(&self, new_name: &str, root: Option<&Path>, mapping: &Mapping) -> Result<PathBuf, Box<dyn Error>> {
+        fn make_dst(&self, new_name: &str, root: Option<&Path>, mapping: &Mapping) -> Result<PathBuf> {
             let mut dst: String = self.parse_file(new_name)?;
             let root = match root {
                 None => { &self.target }
@@ -392,13 +412,13 @@ mod structs {
 }
 
 mod config {
-    use std::error::Error;
     use std::fs;
     use std::path::PathBuf;
 
+    use anyhow::Result;
     use directories::ProjectDirs;
 
-    pub fn read(config: PathBuf) -> Result<PathBuf, Box<dyn Error>> {
+    pub fn read(config: PathBuf) -> Result<PathBuf> {
         if !&config.exists() {
             let folder = ProjectDirs::from("com", "Ondřej Vágner", "comic_sort").unwrap();
             if !folder.config_dir().exists() {
@@ -412,11 +432,10 @@ mod config {
 }
 
 mod utils {
-    use std::error::Error;
+    use anyhow::Result;
+    use clap::{Arg, ArgMatches, command, crate_authors, crate_description, crate_name, crate_version};
 
-    use clap::{command, Arg, ArgMatches, crate_authors, crate_description, crate_name, crate_version};
-
-    pub fn get_matches() -> Result<ArgMatches, Box<dyn Error>> {
+    pub fn get_matches() -> Result<ArgMatches> {
         let matches: ArgMatches = command!()
             .author(crate_authors!())
             .about(crate_description!())
@@ -431,5 +450,4 @@ mod utils {
             .get_matches();
         Ok(matches)
     }
-
 }

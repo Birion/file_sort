@@ -1,11 +1,12 @@
-use std::error::Error;
 use std::path::PathBuf;
 
+use atty::Stream;
+use anyhow::Result;
 use clap::ArgMatches;
 use human_panic::setup_panic;
 use comic_sort::prelude::*;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     setup_panic!();
     let matches: ArgMatches = get_matches()?;
     let config_file: &str = matches.get_one::<String>("config").unwrap();
@@ -24,7 +25,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         let _ = config.process(file);
     };
 
-    dont_disappear::enter_to_continue::default();
+    if atty::is(Stream::Stdout) {
+        dont_disappear::enter_to_continue::default();
+    }
 
     Ok(())
 }
