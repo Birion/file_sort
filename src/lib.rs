@@ -380,18 +380,21 @@ mod structs {
                     if let Some(splitter) = &p.splitter {
                         let parts: Vec<&str> =
                             if splitter.contains('%') {
-                                let mut dt = Utc::today();
+                                let mut dt = Utc::now().date_naive();
                                 let mut _fmt = dt.format(splitter).to_string();
                                 while !dst.contains(&_fmt) {
-                                    dt = dt.pred();
+                                    dt = dt.pred_opt().unwrap();
                                     _fmt = dt.format(splitter).to_string();
                                 }
                                 dst.split(&_fmt).collect()
                             } else {
                                 dst.split(splitter).collect()
                             };
-                        let creation_date: String = Utc.timestamp(parts[0].parse()?, 0)
-                            .format(fmt).to_string();
+                        let creation_date: String = Utc
+                            .timestamp_opt(parts[0].parse()?, 0)
+                            .unwrap()
+                            .format(fmt)
+                            .to_string();
                         dst = vec![creation_date.as_str(), parts[1]]
                             .join(p.merger.as_ref().unwrap().as_str());
                     }
