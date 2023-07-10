@@ -9,7 +9,6 @@ pub mod prelude {
 mod parser {
     use std::path::PathBuf;
 
-    use regex::Regex;
     use serde::{Deserialize, Deserializer};
     use shellexpand::tilde;
 
@@ -43,12 +42,6 @@ mod parser {
         }
     }
 
-    pub fn to_regex<'de, D>(deserializer: D) -> Result<Regex, D::Error>
-        where D: Deserializer<'de> {
-        let s: String = Deserialize::deserialize(deserializer)?;
-        Ok(Regex::new(s.as_str()).unwrap())
-    }
-
     pub fn from_arrays<'de, D>(deserializer: D) -> Result<Vec<PathBuf>, D::Error>
         where D: Deserializer<'de> {
         let p: Vec<Vec<String>> = Deserialize::deserialize(deserializer)?;
@@ -65,9 +58,10 @@ mod parser {
         let mut mappings: Vec<Mapping> = vec![];
         if let Some(ref patterns) = mapping.patterns {
             for pattern in patterns {
-                let r = Regex::new(pattern.as_str())?;
-                mapping.pattern = r;
-                mappings.push(mapping.clone())
+                mapping.pattern = Some(pattern.to_string());
+                let mut m = mapping.clone();
+                m.patterns = None;
+                mappings.push(m)
             }
         } else {
             mappings.push(mapping)
@@ -96,6 +90,7 @@ mod parser {
                 }
             }
         }
+        res.dedup();
         Ok(res)
     }
 
@@ -113,7 +108,7 @@ mod enums {
 
     use crate::structs::Mapping;
 
-    #[derive(Deserialize, Debug, Clone)]
+    #[derive(Deserialize, Debug, Clone, PartialEq)]
     #[serde(rename_all = "lowercase")]
     #[serde(tag = "name")]
     pub enum Function {
@@ -212,6 +207,7 @@ mod structs {
 
         pub fn process(&self, file: &Path) -> Result<()> {
             let mut processor: Processor = Processor::new(file);
+            println!("{:#?}", &self.mappings);
 
             for mapping in &self.mappings {
                 let root = &self.root[mapping.root];
@@ -259,11 +255,11 @@ mod structs {
         }
     }
 
-    #[derive(Deserialize, Debug, Clone)]
+    #[derive(Deserialize, Debug, Clone, PartialEq)]
     pub struct Mapping {
         pub title: String,
-        #[serde(deserialize_with = "to_regex")]
-        pub pattern: Regex,
+        // #[serde(deserialize_with = "to_regex")]
+        pub pattern: Option<String>,
         pub patterns: Option<Vec<String>>,
         #[serde(default)]
         #[serde(deserialize_with = "from_array_opt")]
@@ -280,24 +276,25 @@ mod structs {
 
     impl Mapping {
         pub fn make_patterns(&mut self) -> Result<()> {
-            let pattern = &self.pattern;
-            self.old_pattern = {
-                let x: Regex = Regex::new(r"[<>]")?;
-                x.replace_all(pattern.as_str(), "").to_string()
-            };
-            self.new_pattern = {
-                let replacement: Regex = Regex::new(r".*<(.*)>.*")?;
-                let x: Option<Captures> = replacement.captures(pattern.as_str());
-                match x {
-                    Some(x) => x.get(1).unwrap().as_str().to_string(),
-                    None => pattern.to_string()
+            if let Some(pattern) = &self.pattern {
+                self.old_pattern = {
+                    let x: Regex = Regex::new(r"[<>]")?;
+                    x.replace_all(pattern.as_str(), "").to_string()
+                };
+                self.new_pattern = {
+                    let replacement: Regex = Regex::new(r".*<(.*)>.*")?;
+                    let x: Option<Captures> = replacement.captures(pattern.as_str());
+                    match x {
+                        Some(x) => x.get(1).unwrap().as_str().to_string(),
+                        None => pattern.to_string()
+                    }
                 }
             };
             Ok(())
         }
     }
 
-    #[derive(Deserialize, Debug, Clone)]
+    #[derive(Deserialize, Debug, Clone, PartialEq)]
     pub struct ConfigProcessor {
         pub splitter: Option<String>,
         #[serde(default = "default_merger")]
