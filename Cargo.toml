@@ -1,6 +1,6 @@
 [package]
-name = "comic_sort"
-version = "1.13.1"
+name = "file_sort"
+version = "1.14.0"
 authors = ["Ondřej Vágner <ondrej.vagner@gmail.com>"]
 edition = "2021"
 description = "Moves files into their appropriate folders"
@@ -24,3 +24,7 @@ shellexpand = "3.1"
 
 [build-dependencies]
 winres = "0.1"
+
+[[bin]]
+name = "fsort"
+path = "src/main.rs"
