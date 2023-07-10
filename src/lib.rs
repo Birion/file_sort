@@ -207,7 +207,6 @@ mod structs {
 
         pub fn process(&self, file: &Path) -> Result<()> {
             let mut processor: Processor = Processor::new(file);
-            println!("{:#?}", &self.mappings);
 
             for mapping in &self.mappings {
                 let root = &self.root[mapping.root];

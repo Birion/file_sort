@@ -1,10 +1,11 @@
 use std::path::PathBuf;
 
-use atty::Stream;
 use anyhow::Result;
+use atty::Stream;
 use clap::ArgMatches;
 use human_panic::setup_panic;
-use comic_sort::prelude::*;
+
+use file_sort::prelude::*;
 
 fn main() -> Result<()> {
     setup_panic!();
