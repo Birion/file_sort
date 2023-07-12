@@ -24,26 +24,32 @@ mod parser {
     }
 
     pub fn from_array<'de, D>(deserializer: D) -> Result<PathBuf, D::Error>
-        where D: Deserializer<'de> {
+    where
+        D: Deserializer<'de>,
+    {
         let p: Vec<String> = Deserialize::deserialize(deserializer)?;
 
         Ok(p.iter().map(|res| process_path(res.as_str())).collect())
     }
 
     pub fn from_array_opt<'de, D>(deserializer: D) -> Result<Option<PathBuf>, D::Error>
-        where D: Deserializer<'de> {
+    where
+        D: Deserializer<'de>,
+    {
         let p: Option<Vec<String>> = Deserialize::deserialize(deserializer)?;
 
         match p {
-            None => { Ok(None) }
-            Some(p) => {
-                Ok(Some(p.iter().map(|res| process_path(res.as_str())).collect()))
-            }
+            None => Ok(None),
+            Some(p) => Ok(Some(
+                p.iter().map(|res| process_path(res.as_str())).collect(),
+            )),
         }
     }
 
     pub fn from_arrays<'de, D>(deserializer: D) -> Result<Vec<PathBuf>, D::Error>
-        where D: Deserializer<'de> {
+    where
+        D: Deserializer<'de>,
+    {
         let p: Vec<Vec<String>> = Deserialize::deserialize(deserializer)?;
         let mut res: Vec<PathBuf> = vec![];
 
@@ -70,7 +76,9 @@ mod parser {
     }
 
     pub fn parse_mappings<'de, D>(deserializer: D) -> Result<Vec<Mapping>, D::Error>
-        where D: Deserializer<'de> {
+    where
+        D: Deserializer<'de>,
+    {
         let p: Mappings = Deserialize::deserialize(deserializer)?;
         let mut res: Vec<Mapping> = vec![];
         match p {
@@ -120,8 +128,8 @@ mod enums {
         pub fn get_dir(&self, root: &Path) -> Result<PathBuf> {
             let mut path: PathBuf = root.into();
             let args = match self {
-                Function::Last { args } => { args }
-                Function::First { args } => { args }
+                Function::Last { args } => args,
+                Function::First { args } => args,
             };
             match args {
                 Some(arg) => {
@@ -129,24 +137,19 @@ mod enums {
                         path.push(x)
                     }
                 }
-                None => { path.push("*") }
+                None => path.push("*"),
             }
             let p = path.to_str().unwrap();
 
-            let results: Vec<PathBuf> = glob(p)?
-                .map(|x| x.unwrap()).collect();
+            let results: Vec<PathBuf> = glob(p)?.map(|x| x.unwrap()).collect();
 
             if results.is_empty() {
                 panic!("Couldn't find any folders fitting the pattern {p}")
             }
 
             match self {
-                Function::Last { .. } => {
-                    Ok(results[results.len() - 1].clone())
-                }
-                Function::First { .. } => {
-                    Ok(results[0].clone())
-                }
+                Function::Last { .. } => Ok(results[results.len() - 1].clone()),
+                Function::First { .. } => Ok(results[0].clone()),
             }
         }
     }
@@ -189,23 +192,20 @@ mod structs {
 
     impl Config {
         pub fn get_files(&mut self) -> Result<()> {
-            for ext in ["jpg", "jpeg", "gif", "png", "*"].iter() {
-                let y: &PathBuf = &self.download.join("*.".to_owned() + ext);
-                for z in glob(y.to_str().unwrap())? {
-                    self.files.insert(0, z?);
-                }
+            let y: &PathBuf = &self.download.join("*");
+            for z in glob(y.to_str().unwrap())? {
+                self.files.insert(0, z?);
             }
             Ok(())
         }
 
         pub fn load(file: PathBuf) -> Result<Config> {
-            let config: Config = from_str(
-                fs::read_to_string(file.to_str().unwrap())?.as_str())
+            let config: Config = from_str(fs::read_to_string(file.to_str().unwrap())?.as_str())
                 .expect("Couldn't read YAML file");
             Ok(config)
         }
 
-        pub fn process(&self, file: &Path) -> Result<()> {
+        pub fn process(&self, file: &Path, dry: bool) -> Result<()> {
             let mut processor: Processor = Processor::new(file);
 
             for mapping in &self.mappings {
@@ -213,25 +213,23 @@ mod structs {
                 let map_pattern: Regex = Regex::new(mapping.old_pattern.as_str())?;
                 if map_pattern.is_match(processor.filename()) {
                     let dir = match mapping.directory.clone() {
-                        None => { PathBuf::from(&mapping.title) }
-                        Some(d) => { d }
+                        None => PathBuf::from(&mapping.title),
+                        Some(d) => d,
                     };
                     processor.make_target_dir(root, &dir);
 
                     let source: &Path = &self.download.join(processor.filename());
 
                     let target = match &mapping.function {
-                        None => {
-                            processor.make_dst(&mapping.new_pattern, None, mapping)?
-                        }
+                        None => processor.make_dst(&mapping.new_pattern, None, mapping)?,
                         Some(func) => match func {
                             &_ => {
-                                let temp_root = processor
-                                    .make_dst(&mapping.new_pattern, None, mapping)?;
+                                let temp_root =
+                                    processor.make_dst(&mapping.new_pattern, None, mapping)?;
                                 let r = func.get_dir(temp_root.parent().unwrap()).unwrap();
                                 processor.make_dst(&mapping.new_pattern, Some(&r), mapping)?
                             }
-                        }
+                        },
                     };
 
                     let new_filename: &str = target.file_name().unwrap().to_str().unwrap();
@@ -240,13 +238,14 @@ mod structs {
                         file = processor.filename().bold(),
                         title = mapping.title.bold().blue(),
                     );
-                    if new_filename != processor.filename()
-                    {
+                    if new_filename != processor.filename() {
                         println!("New filename: {}", new_filename.bold().red())
                     }
                     println!();
 
-                    let _ = rename(source, target);
+                    if !dry {
+                        let _ = rename(source, target);
+                    }
                 }
             }
 
@@ -285,7 +284,7 @@ mod structs {
                     let x: Option<Captures> = replacement.captures(pattern.as_str());
                     match x {
                         Some(x) => x.get(1).unwrap().as_str().to_string(),
-                        None => pattern.to_string()
+                        None => pattern.to_string(),
                     }
                 }
             };
@@ -299,7 +298,7 @@ mod structs {
         #[serde(default = "default_merger")]
         pub merger: Option<String>,
         pub pattern: Option<String>,
-        pub format: Option<String>,
+        pub date_format: Option<String>,
         pub replacement: Option<String>,
     }
 
@@ -329,19 +328,23 @@ mod structs {
             }
             let replacement: Match = replacement_pattern.find(dir).unwrap();
             let found_group: Option<Match> = replacement_pattern
-                .captures(replacement.as_str()).unwrap().get(1);
+                .captures(replacement.as_str())
+                .unwrap()
+                .get(1);
             let rg: Vec<usize> = found_group
-                .map(|res| res.as_str()).unwrap().split(':')
-                .map(|res| res.parse().unwrap()).collect();
+                .map(|res| res.as_str())
+                .unwrap()
+                .split(':')
+                .map(|res| res.parse().unwrap())
+                .collect();
 
             let start = rg[0];
             let finish = rg[0] + rg[1];
             let replacer = String::from(self.filename());
             let replace_part = replacer[start..finish].to_string();
 
-            let new_pattern: Regex = Regex::new(
-                format!("<{}>", found_group.unwrap().as_str()).as_str()
-            )?;
+            let new_pattern: Regex =
+                Regex::new(format!("<{}>", found_group.unwrap().as_str()).as_str())?;
 
             let dir: String = new_pattern
                 .replace(directory.to_str().unwrap(), replace_part)
@@ -366,20 +369,23 @@ mod structs {
             let _ = create_dir_all(&self.target);
         }
 
-        fn make_dst(&self, new_name: &str, root: Option<&Path>, mapping: &Mapping) -> Result<PathBuf> {
+        fn make_dst(
+            &self,
+            new_name: &str,
+            root: Option<&Path>,
+            mapping: &Mapping,
+        ) -> Result<PathBuf> {
             let mut dst: String = self.parse_file(new_name)?;
             let root = match root {
-                None => { &self.target }
-                Some(r) => { r }
+                None => &self.target,
+                Some(r) => r,
             };
 
             if mapping.processors.is_some() {
-                let processor = &mapping.processors;
-                if let Some(p) = processor {
-                    let fmt = p.format.as_ref().unwrap();
-                    if let Some(splitter) = &p.splitter {
-                        let parts: Vec<&str> =
-                            if splitter.contains('%') {
+                if let Some(p) = &mapping.processors {
+                    if let Some(fmt) = &p.date_format {
+                        if let Some(splitter) = &p.splitter {
+                            let parts: Vec<&str> = if splitter.contains('%') {
                                 let mut dt = Utc::now().date_naive();
                                 let mut _fmt = dt.format(splitter).to_string();
                                 while !dst.contains(&_fmt) {
@@ -390,17 +396,20 @@ mod structs {
                             } else {
                                 dst.split(splitter).collect()
                             };
-                        let creation_date: String = Utc
-                            .timestamp_opt(parts[0].parse()?, 0)
-                            .unwrap()
-                            .format(fmt)
-                            .to_string();
-                        dst = vec![creation_date.as_str(), parts[1]]
-                            .join(p.merger.as_ref().unwrap().as_str());
+                            let creation_date: String = Utc
+                                .timestamp_opt(parts[0].parse()?, 0)
+                                .unwrap()
+                                .format(fmt)
+                                .to_string();
+                            dst = vec![creation_date.as_str(), parts[1]]
+                                .join(p.merger.as_ref().unwrap().as_str());
+                        }
                     }
                     if let Some(pattern) = &p.pattern {
-                        let replacement = p.replacement.as_ref().unwrap();
-                        dst = pattern.replace(dst.as_str(), replacement);
+                        let pattern = Regex::new(pattern)?;
+                        if let Some(replacement) = &p.replacement {
+                            dst = pattern.replace(dst.as_str(), replacement).to_string();
+                        }
                     }
                 }
             }
@@ -432,7 +441,9 @@ mod config {
 
 mod utils {
     use anyhow::Result;
-    use clap::{Arg, ArgMatches, command, crate_authors, crate_description, crate_name, crate_version};
+    use clap::{
+        command, crate_authors, crate_description, crate_name, crate_version, Arg, ArgMatches,
+    };
 
     pub fn get_matches() -> Result<ArgMatches> {
         let matches: ArgMatches = command!()
@@ -440,11 +451,18 @@ mod utils {
             .about(crate_description!())
             .name(crate_name!())
             .version(crate_version!())
-            .arg(Arg::new("config")
-                .short('c')
-                .long("config")
-                .help("Read from a specific config file")
-                .default_value("config.yaml")
+            .arg(
+                Arg::new("config")
+                    .short('c')
+                    .long("config")
+                    .help("Read from a specific config file")
+                    .default_value("config.yaml"),
+            )
+            .arg(
+                Arg::new("dry")
+                    .short('n')
+                    .help("Run without moving any files")
+                    .num_args(0),
             )
             .get_matches();
         Ok(matches)
