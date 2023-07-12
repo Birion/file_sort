@@ -16,15 +16,17 @@ fn main() -> Result<()> {
 
     let mut config: Config = Config::load(file)?;
 
-    config.get_files().expect("Couldn't read the download folder");
+    config
+        .get_files()
+        .expect("Couldn't read the download folder");
 
     for mapping in &mut config.mappings {
         let _ = mapping.make_patterns();
     }
 
     for file in &config.files {
-        let _ = config.process(file);
-    };
+        let _ = config.process(file, matches.get_flag("dry"));
+    }
 
     if atty::is(Stream::Stdout) {
         dont_disappear::enter_to_continue::default();
