@@ -1,5 +1,3 @@
-extern crate core;
-
 pub mod prelude {
     pub use super::config::read;
     pub use super::structs::{Config, Mapping};
@@ -24,8 +22,8 @@ mod parser {
     }
 
     pub fn from_array<'de, D>(deserializer: D) -> Result<PathBuf, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let p: Vec<String> = Deserialize::deserialize(deserializer)?;
 
@@ -33,8 +31,8 @@ mod parser {
     }
 
     pub fn from_array_opt<'de, D>(deserializer: D) -> Result<Option<PathBuf>, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let p: Option<Vec<String>> = Deserialize::deserialize(deserializer)?;
 
@@ -47,8 +45,8 @@ mod parser {
     }
 
     pub fn from_arrays<'de, D>(deserializer: D) -> Result<Vec<PathBuf>, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let p: Vec<Vec<String>> = Deserialize::deserialize(deserializer)?;
         let mut res: Vec<PathBuf> = vec![];
@@ -76,8 +74,8 @@ mod parser {
     }
 
     pub fn parse_mappings<'de, D>(deserializer: D) -> Result<Vec<Mapping>, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let p: Mappings = Deserialize::deserialize(deserializer)?;
         let mut res: Vec<Mapping> = vec![];
@@ -91,7 +89,9 @@ mod parser {
             Mappings::Root(r) => {
                 for (idx, root) in r.into_iter().enumerate() {
                     for mut map in root {
-                        map.root = idx;
+                        if map.root == 0 {
+                            map.root = idx;
+                        }
                         let all_pattern_mappings = map_patterns_to_mappings(map).unwrap();
                         res.extend(all_pattern_mappings)
                     }
@@ -115,6 +115,8 @@ mod enums {
     use serde::Deserialize;
 
     use crate::structs::Mapping;
+
+    type MappingList = Vec<Mapping>;
 
     #[derive(Deserialize, Debug, Clone, PartialEq)]
     #[serde(rename_all = "lowercase")]
@@ -157,14 +159,14 @@ mod enums {
     #[derive(Deserialize, Debug)]
     #[serde(untagged)]
     pub enum Mappings {
-        Mapping(Vec<Mapping>),
-        Root(Vec<Vec<Mapping>>),
+        Mapping(MappingList),
+        Root(Vec<MappingList>),
     }
 }
 
 mod structs {
     use std::fs;
-    use std::fs::{create_dir_all, rename};
+    use std::fs::{copy, create_dir_all, rename};
     use std::path::{Path, PathBuf};
 
     use anyhow::Result;
@@ -221,12 +223,12 @@ mod structs {
                     let source: &Path = &self.download.join(processor.filename());
 
                     let target = match &mapping.function {
-                        None => processor.make_dst(&mapping.new_pattern, None, mapping)?,
+                        None => processor.make_dst(&mapping.new_pattern, Some(root), mapping)?,
                         Some(func) => match func {
                             &_ => {
                                 let temp_root =
                                     processor.make_dst(&mapping.new_pattern, None, mapping)?;
-                                let r = func.get_dir(temp_root.parent().unwrap()).unwrap();
+                                let r = func.get_dir(temp_root.parent().unwrap())?;
                                 processor.make_dst(&mapping.new_pattern, Some(&r), mapping)?
                             }
                         },
@@ -244,7 +246,11 @@ mod structs {
                     println!();
 
                     if !dry {
-                        let _ = rename(source, target);
+                        if mapping.copy {
+                            copy(source, target)?;
+                        } else {
+                            rename(source, target)?;
+                        }
                     }
                 }
             }
@@ -266,6 +272,8 @@ mod structs {
         pub processors: Option<ConfigProcessor>,
         #[serde(default)]
         pub root: usize,
+        #[serde(default)]
+        pub copy: bool,
         #[serde(skip_deserializing)]
         pub old_pattern: String,
         #[serde(skip_deserializing)]
@@ -354,9 +362,9 @@ mod structs {
         }
 
         fn parse_file(&self, pattern: &str) -> Result<String> {
-            let mut result: String = self.filename().to_string();
-            let r: Regex = Regex::new(pattern)?;
-            let group: Option<Match> = r.captures(self.filename()).unwrap().get(0);
+            let mut result = self.filename().to_string();
+            let r = Regex::new(pattern)?;
+            let group = r.captures(self.filename()).unwrap().get(0);
             if let Some(g) = group {
                 result = g.as_str().to_string();
             }
@@ -401,7 +409,7 @@ mod structs {
                                 .unwrap()
                                 .format(fmt)
                                 .to_string();
-                            dst = vec![creation_date.as_str(), parts[1]]
+                            dst = [creation_date.as_str(), parts[1]]
                                 .join(p.merger.as_ref().unwrap().as_str());
                         }
                     }
@@ -442,7 +450,7 @@ mod config {
 mod utils {
     use anyhow::Result;
     use clap::{
-        command, crate_authors, crate_description, crate_name, crate_version, Arg, ArgMatches,
+        Arg, ArgMatches, command, crate_authors, crate_description, crate_name, crate_version,
     };
 
     pub fn get_matches() -> Result<ArgMatches> {
