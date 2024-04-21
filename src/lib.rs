@@ -1,14 +1,11 @@
-use std::fs;
 use std::fs::{copy, create_dir_all, rename};
 use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
-use colored::Colorize;
 use glob::glob;
 use once_cell::sync::Lazy;
 use regex::{Match, Regex};
 use serde::Deserialize;
-use serde_yaml::from_str;
 
 pub use cli::*;
 pub use configuration::*;
@@ -29,6 +26,9 @@ pub type RulesList = Vec<Rule>;
 pub type ArgumentList = Vec<String>;
 
 const WILDCARD: &str = "*";
+const QUALIFIER: &str = "com";
+const ORGANIZATION: &str = "Ondřej Vágner";
+const APPLICATION: &str = "comic_sort";
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -81,75 +81,6 @@ impl TransformativeFunction {
 pub enum Rules {
     SingleRule(RulesList),
     RootRules(Vec<RulesList>),
-}
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct Config {
-    #[serde(deserialize_with = "deserialize_from_arrays_to_pathbuf_vec")]
-    pub root: Vec<PathBuf>,
-    #[serde(deserialize_with = "deserialize_from_array_to_pathbuf")]
-    pub download: PathBuf,
-    #[serde(deserialize_with = "parse_rules")]
-    pub rules: RulesList,
-    #[serde(skip_deserializing)]
-    pub files: Vec<PathBuf>,
-}
-
-impl Config {
-    pub fn get_files(&mut self) -> Result<()> {
-        for file_path in glob(self.download.join(WILDCARD).to_str().unwrap())? {
-            self.files.insert(0, file_path?);
-        }
-        Ok(())
-    }
-
-    pub fn load(file: PathBuf) -> Result<Config> {
-        let file_content = fs::read(file)?;
-        let content_str = String::from_utf8(file_content)?;
-        let config: Config = from_str(&content_str)?;
-        Ok(config)
-    }
-
-    pub fn process(&self, file: &Path, run_execution: bool) -> Result<()> {
-        let mut file_processor = Processor::new(file);
-        for rule in &self.rules {
-            if let Ok(applied_rule) = self.apply_rule(rule, &mut file_processor) {
-                println!(
-                    "{file} found! Applying setup for {title}.",
-                    file = applied_rule.source_filename()?.bold(),
-                    title = rule.title.bold().blue(),
-                );
-                if applied_rule.is_changed()? {
-                    println!(
-                        "New filename: {}",
-                        applied_rule.target_filename()?.bold().red()
-                    )
-                }
-                println!();
-                if !run_execution {
-                    return applied_rule.perform_file_action(rule.copy);
-                }
-            }
-        }
-
-        Ok(())
-    }
-
-    fn apply_rule(&self, rule: &Rule, processor: &mut Processor) -> Result<Processor> {
-        let root_path = &self.root[rule.root];
-        let pattern = Regex::new(rule.old_pattern.as_str())?;
-        if pattern.is_match(processor.source_filename()?) {
-            let directory = match &rule.directory {
-                None => PathBuf::from(&rule.title),
-                Some(dir) => dir.to_owned(),
-            };
-            processor.create_and_set_target_directory(root_path, &directory)?;
-            processor.target = generate_target(processor, rule, &processor.target)?;
-            Ok(processor.to_owned())
-        } else {
-            Err(anyhow!("Pattern doesn't match."))
-        }
-    }
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
