@@ -1,6 +1,6 @@
 [package]
 name = "file_sort"
-version = "2.0.0"
+version = "2.0.1"
 authors = ["Ondřej Vágner <ondrej.vagner@gmail.com>"]
 edition = "2021"
 description = "Moves files into their appropriate folders"
