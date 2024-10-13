@@ -1,6 +1,6 @@
 [package]
 name = "file_sort"
-version = "2.0.1"
+version = "2.1.0"
 authors = ["Ondřej Vágner <ondrej.vagner@gmail.com>"]
 edition = "2021"
 description = "Moves files into their appropriate folders"
@@ -16,7 +16,7 @@ colored = "2.1"
 directories = "5.0"
 dont_disappear = "3.0"
 glob = "0.3"
-human-panic = "1"
+human-panic = "2.0"
 regex = "1.10"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
