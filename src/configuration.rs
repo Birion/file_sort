@@ -11,10 +11,10 @@ use regex::Regex;
 use serde::Deserialize;
 use serde_yaml::from_str;
 
-use crate::{APPLICATION, ORGANIZATION, Processor, QUALIFIER, Rule, RulesList, WILDCARD};
 use crate::cli::check_for_stdout_stream;
 use crate::parser::*;
 use crate::utils::generate_target;
+use crate::{Processor, Rule, RulesList, APPLICATION, ORGANIZATION, QUALIFIER, WILDCARD};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Config {
@@ -95,7 +95,9 @@ pub fn perform_processing_based_on_configuration(argument_matches: ArgMatches) -
 
     execute_based_on_configuration(&configuration, argument_matches.get_flag("dry"))?;
 
-    check_for_stdout_stream();
+    if !argument_matches.get_flag("key") {
+        check_for_stdout_stream();
+    }
 
     Ok(())
 }

@@ -16,6 +16,7 @@ pub fn get_configuration_file_option() -> Result<ArgMatches> {
 
 const CONFIG: &str = "Read from a specific config file";
 const DRY: &str = "Run without moving any files";
+const ENTER: &str = "Don't wait for keypress after finishing";
 const DEFAULT_CONFIG_PATH: &str = "config.yaml";
 
 pub fn get_matches() -> Result<ArgMatches> {
@@ -34,6 +35,12 @@ pub fn get_matches() -> Result<ArgMatches> {
         .help(DRY)
         .num_args(0);
 
+    let arg_key = Arg::new("key")
+        .short('k')
+        .long("key")
+        .help(ENTER)
+        .num_args(0);
+
     let matches = command!()
         .author(crate_authors!())
         .about(crate_description!())
@@ -41,6 +48,7 @@ pub fn get_matches() -> Result<ArgMatches> {
         .version(crate_version!())
         .arg(arg_config)
         .arg(arg_dry)
+        .arg(arg_key)
         .get_matches();
 
     Ok(matches)
