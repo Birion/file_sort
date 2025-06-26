@@ -6,11 +6,12 @@ use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 
 use crate::errors::{
-    generic_error, pattern_extraction_error, pattern_matching_error,
+    generic_error, path_operation_error, pattern_extraction_error, pattern_matching_error, Result,
 };
-use crate::{path_operation_error, Processor, Result, Rule};
+use crate::processor::Processor;
+use crate::rules::Rule;
 
-/// Helper method to clean pattern by removing angle brackets
+/// Helper method to clean the pattern by removing angle brackets
 pub fn clean_pattern(pattern: &str) -> Result<String> {
     static CLEAN_RE: Lazy<Regex> = Lazy::new(|| {
         Regex::new(r"[<>]").expect("Failed to compile regex pattern for clean_pattern")

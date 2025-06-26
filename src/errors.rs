@@ -124,6 +124,26 @@ impl From<PatternError> for Error {
 }
 
 /// Custom Result type for the File Sort application
+///
+/// This type alias simplifies error handling throughout the application by
+/// using the custom Error type. It's used as the return type for most functions
+/// that can fail.
+///
+/// # Type Parameters
+/// * `T` - The type of the successful result
+///
+/// # Examples
+/// ```
+/// use file_sort::prelude::{Result, generic_error};
+///
+/// fn example_function() -> Result<String> {
+///     // Return success
+///     Ok("success".to_string())
+///     
+///     // Or return an error
+///     // Err(generic_error("Something went wrong"))
+/// }
+/// ```
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Helper function to create a file operation error

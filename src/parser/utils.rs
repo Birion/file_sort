@@ -1,8 +1,7 @@
 use std::path::PathBuf;
 
+use crate::rules::{Rule, RulesList};
 use shellexpand::tilde;
-
-use crate::{Rule, RulesList};
 
 pub fn expand_path(path: &str) -> String {
     tilde(path).to_string()
@@ -25,7 +24,8 @@ pub fn process_strings_to_paths(strings: Vec<String>) -> PathBuf {
 }
 
 pub fn process_patterns(rule: &mut Rule, patterns: &[String]) -> RulesList {
-    patterns.iter()
+    patterns
+        .iter()
         .map(|pattern| extract_rule_with_pattern(rule, pattern))
         .collect()
 }

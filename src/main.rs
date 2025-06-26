@@ -1,6 +1,4 @@
 use anyhow::Result;
-use file_sort::get_verbosity;
-use file_sort::logging::init_logger;
 use file_sort::prelude::*;
 use human_panic::setup_panic;
 

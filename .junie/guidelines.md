@@ -77,7 +77,14 @@ mod tests {
 - `src/lib.rs`: Core library functionality
 - `src/cli.rs`: Command-line interface handling
 - `src/configuration.rs`: Configuration file parsing
+- `src/constants.rs`: Constants used throughout the project
+- `src/errors.rs`: Custom error types
+- `src/logging.rs`: Logging setup and utilities
 - `src/parser.rs`: File pattern parsing
+- `src/parser/utils.rs`: Utilities for the parser
+- `src/processor.rs`: File processing logic
+- `src/rules.rs`: Rule definition and handling
+- `src/transormative_function.rs`: Transformative functions for directory selection
 - `src/utils.rs`: Utility functions
 
 ### Code Style

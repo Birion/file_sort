@@ -7,7 +7,7 @@ use std::str::FromStr;
 
 /// Verbosity level for logging
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Verbosity {
+pub enum LogLevel {
     /// Error messages only
     Error,
     /// Warning and error messages
@@ -20,46 +20,46 @@ pub enum Verbosity {
     Trace,
 }
 
-impl FromStr for Verbosity {
+impl FromStr for LogLevel {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
-            "error" => Ok(Verbosity::Error),
-            "warn" | "warning" => Ok(Verbosity::Warning),
-            "info" => Ok(Verbosity::Info),
-            "debug" => Ok(Verbosity::Debug),
-            "trace" => Ok(Verbosity::Trace),
+            "error" => Ok(LogLevel::Error),
+            "warn" | "warning" => Ok(LogLevel::Warning),
+            "info" => Ok(LogLevel::Info),
+            "debug" => Ok(LogLevel::Debug),
+            "trace" => Ok(LogLevel::Trace),
             _ => Err(format!("Unknown verbosity level: {}", s)),
         }
     }
 }
 
-impl Verbosity {
+impl LogLevel {
     /// Convert verbosity level to log::LevelFilter
     pub fn to_level_filter(&self) -> LevelFilter {
         match self {
-            Verbosity::Error => LevelFilter::Error,
-            Verbosity::Warning => LevelFilter::Warn,
-            Verbosity::Info => LevelFilter::Info,
-            Verbosity::Debug => LevelFilter::Debug,
-            Verbosity::Trace => LevelFilter::Trace,
+            LogLevel::Error => LevelFilter::Error,
+            LogLevel::Warning => LevelFilter::Warn,
+            LogLevel::Info => LevelFilter::Info,
+            LogLevel::Debug => LevelFilter::Debug,
+            LogLevel::Trace => LevelFilter::Trace,
         }
     }
 
     /// Get the verbosity level from the number of occurrences of a flag
     pub fn from_occurrences(occurrences: u8) -> Self {
         match occurrences {
-            0 => Verbosity::Info,  // Default
-            1 => Verbosity::Debug, // -v
-            _ => Verbosity::Trace, // -vv or more
+            0 => LogLevel::Info,  // Default
+            1 => LogLevel::Debug, // -v
+            _ => LogLevel::Trace, // -vv or more
         }
     }
 }
 
 /// Initialise the logger with the specified verbosity level
-pub fn init_logger(verbosity: Verbosity) -> Result<()> {
-    let base_logger = fern::Dispatch::new().level(verbosity.to_level_filter());
+pub fn init_logger(verbosity: LogLevel) -> Result<()> {
+    let base_logger = Dispatch::new().level(verbosity.to_level_filter());
 
     let file_logger = Dispatch::new()
         .format(|out, message, record| {
@@ -104,7 +104,7 @@ pub fn init_logger(verbosity: Verbosity) -> Result<()> {
 
 /// Initialise the logger with the default verbosity level (Info)
 pub fn init_default_logger() -> Result<()> {
-    init_logger(Verbosity::Info)
+    init_logger(LogLevel::Info)
 }
 
 /// Format a message with colour support

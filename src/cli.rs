@@ -1,47 +1,65 @@
 use anyhow::Result;
 use atty::Stream;
-use clap::{Arg, ArgMatches, command, crate_authors, crate_description, crate_name, crate_version};
+use clap::{command, crate_authors, crate_description, crate_name, crate_version, Arg, ArgMatches};
 
-use crate::logging::Verbosity;
+use crate::constants::{CONFIG_HELP, DEFAULT_CONFIG_PATH, DRY_RUN_HELP, VERBOSE_HELP};
+use crate::logging::LogLevel;
 
+/// Checks if stdout is a terminal and waits for user input if it is
+///
+/// This function is used to prevent the console window from closing
+/// immediately after the program finishes when run from a GUI.
 pub fn check_for_stdout_stream() {
     if atty::is(Stream::Stdout) {
         dont_disappear::enter_to_continue::default();
     }
 }
 
+/// Gets the configuration file option from command-line arguments
+///
+/// # Returns
+/// * `Result<ArgMatches>` - The command-line arguments with the configuration file option
+///
+/// # Errors
+/// Returns an error if the command-line arguments cannot be parsed
 pub fn get_configuration_file_option() -> Result<ArgMatches> {
     let argument_matches = get_matches()?;
     argument_matches.get_one::<String>("config").unwrap();
     Ok(argument_matches)
 }
 
-const CONFIG: &str = "Read from a specific config file";
-const DRY: &str = "Run without moving any files";
-const VERBOSE: &str = "Increase verbosity level (can be used multiple times)";
-const DEFAULT_CONFIG_PATH: &str = "config.yaml";
-
+/// Sets up and returns command-line argument matches
+///
+/// Defines the following arguments:
+/// - `config`: Path to the configuration file
+/// - `dry`: Run without moving any files
+/// - `verbose`: Increase verbosity level
+///
+/// # Returns
+/// * `Result<ArgMatches>` - The parsed command-line arguments
+///
+/// # Errors
+/// Returns an error if the command-line arguments cannot be parsed
 pub fn get_matches() -> Result<ArgMatches> {
-
-    // define arg for reading from specific config file
+    // define arg for reading from a specific config file
     let arg_config = Arg::new("config")
         .short('c')
         .long("config")
-        .help(CONFIG)
+        .help(CONFIG_HELP)
         .default_value(DEFAULT_CONFIG_PATH);
 
     // define arg for dry run
     let arg_dry = Arg::new("dry")
         .short('n')
         .long("dry")
-        .help(DRY)
+        .help(DRY_RUN_HELP)
         .num_args(0);
 
     // define arg for verbosity level
     let arg_verbose = Arg::new("verbose")
         .short('v')
         .long("verbose")
-        .help(VERBOSE)
+        .help(VERBOSE_HELP)
         .action(clap::ArgAction::Count);
 
     let matches = command!()
@@ -57,8 +75,36 @@ pub fn get_matches() -> Result<ArgMatches> {
     Ok(matches)
 }
 
-/// Get the verbosity level from the command-line arguments
-pub fn get_verbosity(matches: &ArgMatches) -> Verbosity {
+/// Gets the verbosity level from the command-line arguments
+///
+/// This function extracts the verbosity level from the command-line arguments
+/// by counting the occurrences of the "verbose" flag and converting it to
+/// a Verbosity enum value.
+///
+/// # Arguments
+/// * `matches` - The parsed command-line arguments
+///
+/// # Returns
+/// * `Verbosity` - The verbosity level based on the number of -v/--verbose flags
+///
+/// # Examples
+/// ```
+/// # use clap::ArgMatches;
+/// # use file_sort::cli::get_verbosity;
+/// # use file_sort::logging::LogLevel;
+/// # fn example(matches: &ArgMatches) {
+/// // Get verbosity level from command-line arguments
+/// let verbosity = get_verbosity(matches);
+///
+/// // Use the verbosity level to configure logging
+/// match verbosity {
+///     LogLevel::Info => println!("Running with normal output"),
+///     LogLevel::Debug => println!("Running with debug output"),
+///     _ => {}
+/// }
+/// # }
+/// ```
+pub fn get_verbosity(matches: &ArgMatches) -> LogLevel {
     let verbose_count = matches.get_count("verbose");
-    Verbosity::from_occurrences(verbose_count as u8)
+    LogLevel::from_occurrences(verbose_count)
 }
