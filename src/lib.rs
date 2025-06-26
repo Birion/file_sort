@@ -15,7 +15,7 @@ use utils::*;
 mod cli;
 mod configuration;
 mod errors;
-mod logging;
+pub mod logging;
 mod parser;
 mod utils;
 

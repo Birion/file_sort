@@ -1,9 +1,19 @@
 use anyhow::Result;
-use human_panic::setup_panic;
-
+use file_sort::get_verbosity;
+use file_sort::logging::init_logger;
 use file_sort::prelude::*;
+use human_panic::setup_panic;
 
 fn main() -> Result<()> {
     setup_panic!();
-    perform_processing_based_on_configuration(get_configuration_file_option()?)
+
+    // Get command-line arguments
+    let matches = get_configuration_file_option()?;
+
+    // Initialise the logger with the verbosity level from the command-line arguments
+    let verbosity = get_verbosity(&matches);
+    init_logger(verbosity)?;
+
+    // Process files based on the configuration
+    perform_processing_based_on_configuration(matches)
 }

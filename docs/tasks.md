@@ -6,7 +6,7 @@ logically ordered and covers both architectural and code-level improvements.
 ## Code Quality and Structure
 
 1. [x] Refactor error handling to use custom error types instead of anyhow::Error for more specific error messages
-2. [ ] Implement a proper logging system with different verbosity levels instead of direct println! calls
+2. [x] Implement a proper logging system with different verbosity levels instead of direct println! calls
 3. [ ] Add comprehensive documentation comments to all public functions and types
 4. [ ] Extract hardcoded constants to a dedicated configuration module
 5. [ ] Improve code organisation by splitting large files into smaller, more focused modules

@@ -2,6 +2,8 @@ use anyhow::Result;
 use atty::Stream;
 use clap::{Arg, ArgMatches, command, crate_authors, crate_description, crate_name, crate_version};
 
+use crate::logging::Verbosity;
+
 pub fn check_for_stdout_stream() {
     if atty::is(Stream::Stdout) {
         dont_disappear::enter_to_continue::default();
@@ -16,6 +18,7 @@ pub fn get_configuration_file_option() -> Result<ArgMatches> {
 
 const CONFIG: &str = "Read from a specific config file";
 const DRY: &str = "Run without moving any files";
+const VERBOSE: &str = "Increase verbosity level (can be used multiple times)";
 const DEFAULT_CONFIG_PATH: &str = "config.yaml";
 
 pub fn get_matches() -> Result<ArgMatches> {
@@ -34,6 +37,13 @@ pub fn get_matches() -> Result<ArgMatches> {
         .help(DRY)
         .num_args(0);
 
+    // define arg for verbosity level
+    let arg_verbose = Arg::new("verbose")
+        .short('v')
+        .long("verbose")
+        .help(VERBOSE)
+        .action(clap::ArgAction::Count);
+
     let matches = command!()
         .author(crate_authors!())
         .about(crate_description!())
@@ -41,7 +51,14 @@ pub fn get_matches() -> Result<ArgMatches> {
         .version(crate_version!())
         .arg(arg_config)
         .arg(arg_dry)
+        .arg(arg_verbose)
         .get_matches();
 
     Ok(matches)
+}
+
+/// Get the verbosity level from the command-line arguments
+pub fn get_verbosity(matches: &ArgMatches) -> Verbosity {
+    let verbose_count = matches.get_count("verbose");
+    Verbosity::from_occurrences(verbose_count as u8)
 }

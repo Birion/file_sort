@@ -1,4 +1,7 @@
-use env_logger::{Builder, Env};
+use anyhow::Result;
+use chrono::SecondsFormat;
+use fern::colors::{Color, ColoredLevelConfig};
+use fern::Dispatch;
 use log::LevelFilter;
 use std::str::FromStr;
 
@@ -55,20 +58,53 @@ impl Verbosity {
 }
 
 /// Initialise the logger with the specified verbosity level
-pub fn init_logger(verbosity: Verbosity) {
-    let env = Env::default().filter_or("FSORT_LOG_LEVEL", verbosity.to_level_filter().to_string());
+pub fn init_logger(verbosity: Verbosity) -> Result<()> {
+    let base_logger = fern::Dispatch::new().level(verbosity.to_level_filter());
 
-    Builder::from_env(env)
-        .format_timestamp(None) // No timestamp in the output
-        .format_module_path(false) // No module path in the output
-        .init();
+    let file_logger = Dispatch::new()
+        .format(|out, message, record| {
+            out.finish(format_args!(
+                "[{} {} {}] {}",
+                chrono::Local::now().to_rfc3339_opts(SecondsFormat::Secs, true),
+                record.level(),
+                record.target(),
+                message
+            ))
+        })
+        .level(verbosity.to_level_filter())
+        .chain(fern::log_file("fsort.log")?);
+
+    let colors_line = ColoredLevelConfig::new()
+        .error(Color::Red)
+        .warn(Color::Yellow)
+        .info(Color::White)
+        .debug(Color::White)
+        .trace(Color::BrightBlack);
+
+    let output_logger = Dispatch::new()
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "\x1B[{}m{}\x1B[0m",
+                colors_line.get_color(&record.level()).to_fg_str(),
+                message
+            ))
+        })
+        .level(verbosity.to_level_filter())
+        .chain(std::io::stdout());
+
+    base_logger
+        .chain(file_logger)
+        .chain(output_logger)
+        .apply()?;
 
     log::debug!("Logger initialized with verbosity level: {:?}", verbosity);
+
+    Ok(())
 }
 
 /// Initialise the logger with the default verbosity level (Info)
-pub fn init_default_logger() {
-    init_logger(Verbosity::Info);
+pub fn init_default_logger() -> Result<()> {
+    init_logger(Verbosity::Info)
 }
 
 /// Format a message with colour support
