@@ -9,7 +9,7 @@ logically ordered and covers both architectural and code-level improvements.
 2. [x] Implement a proper logging system with different verbosity levels instead of direct println! calls
 3. [x] Add comprehensive documentation comments to all public functions and types
 4. [x] Extract hardcoded constants to a dedicated configuration module
-5. [ ] Improve code organisation by splitting large files into smaller, more focused modules
+5. [x] Improve code organisation by splitting large files into smaller, more focused modules
 6. [ ] Implement proper error propagation instead of using unwrap() and expect()
 7. [ ] Add input validation for configuration files with helpful error messages
 8. [ ] Refactor the Processor struct to follow the builder pattern for better readability

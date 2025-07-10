@@ -84,10 +84,10 @@ where
     let mut result_rules = vec![];
     match parsed_rules {
         Rules::SingleRule(mut rules) => {
-            process_rules(&mut rules, &mut result_rules);
+            process_rules(&mut rules, &mut result_rules).map_err(serde::de::Error::custom)?;
         }
         Rules::RootRules(roots) => {
-            process_and_append_rules(roots, &mut result_rules);
+            process_and_append_rules(roots, &mut result_rules).map_err(serde::de::Error::custom)?;
         }
     }
     result_rules.dedup();

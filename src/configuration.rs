@@ -12,6 +12,8 @@ use regex::Regex;
 use serde::Deserialize;
 use serde_yaml::from_str;
 
+use crate::errors::{generic_error, invalid_filename_error};
+
 use crate::cli::check_for_stdout_stream;
 use crate::constants::{APPLICATION, ORGANIZATION, QUALIFIER, WILDCARD};
 use crate::logging::format_message;
@@ -48,7 +50,12 @@ impl Config {
     /// # Errors
     /// Returns an error if the download directory cannot be read or if a file path is invalid
     pub fn get_files(&mut self) -> Result<()> {
-        for file_path in glob(self.download.join(WILDCARD).to_str().unwrap())? {
+        let download_path = self.download.join(WILDCARD);
+        let path_str = download_path
+            .to_str()
+            .ok_or_else(|| invalid_filename_error(download_path.clone()))?;
+
+        for file_path in glob(path_str)? {
             self.files.insert(0, file_path?);
         }
         Ok(())
@@ -160,8 +167,10 @@ impl Config {
 /// # Errors
 /// Returns an error if the configuration cannot be loaded or if file processing fails
 pub fn perform_processing_based_on_configuration(argument_matches: ArgMatches) -> Result<()> {
-    let configuration_file_path =
-        PathBuf::from(argument_matches.get_one::<String>("config").unwrap());
+    let config_arg = argument_matches
+        .get_one::<String>("config")
+        .ok_or_else(|| generic_error("Configuration file path not provided"))?;
+    let configuration_file_path = PathBuf::from(config_arg);
     let configuration_file = read_or_create(configuration_file_path)?;
 
     let mut configuration = Config::load(configuration_file)?;
@@ -297,7 +306,9 @@ pub fn read_or_create(config: PathBuf) -> Result<PathBuf> {
 /// # Errors
 /// * Returns an error if the configuration directory cannot be created
 fn create_config_if_not_exists(config: PathBuf) -> Result<PathBuf> {
-    let folder = ProjectDirs::from(QUALIFIER, ORGANIZATION, APPLICATION).unwrap();
+    let folder = ProjectDirs::from(QUALIFIER, ORGANIZATION, APPLICATION)
+        .ok_or_else(|| generic_error("Failed to determine project directories"))?;
+
     if !folder.config_dir().exists() {
         create_dir_all(folder.config_dir())?;
     }

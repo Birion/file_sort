@@ -49,26 +49,22 @@ impl fmt::Display for Error {
                 write!(f, "Failed to {} file: {}", operation, path.display())
             }
             Error::PatternMatching { pattern, .. } => {
-                write!(f, "Invalid pattern: {}", pattern)
+                write!(f, "Invalid pattern: {pattern}")
             }
             Error::GlobPattern { pattern, .. } => {
-                write!(f, "Invalid glob pattern: {}", pattern)
+                write!(f, "Invalid glob pattern: {pattern}")
             }
             Error::PathOperation { path, operation } => {
                 write!(f, "Failed to {} path: {}", operation, path.display())
             }
             Error::ConfigParsing { detail, .. } => {
-                write!(f, "Configuration parsing error: {}", detail)
+                write!(f, "Configuration parsing error: {detail}")
             }
             Error::PatternExtraction { pattern, detail } => {
-                write!(
-                    f,
-                    "Failed to extract pattern from '{}': {}",
-                    pattern, detail
-                )
+                write!(f, "Failed to extract pattern from '{pattern}': {detail}")
             }
             Error::NoMatch { pattern, value } => {
-                write!(f, "No match found for pattern '{}' in '{}'", pattern, value)
+                write!(f, "No match found for pattern '{pattern}' in '{value}'")
             }
             Error::InvalidFilename { path } => {
                 write!(f, "Filename is not valid unicode: {}", path.display())
@@ -77,7 +73,7 @@ impl fmt::Display for Error {
                 write!(f, "Directory not found: {}", path.display())
             }
             Error::Generic { message } => {
-                write!(f, "{}", message)
+                write!(f, "{message}")
             }
         }
     }

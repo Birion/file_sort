@@ -22,7 +22,7 @@ pub const ORGANIZATION: &str = "Ondřej Vágner";
 ///
 /// This is the name of the application used in various contexts like
 /// configuration file paths and application identification.
-pub const APPLICATION: &str = "comic_sort";
+pub const APPLICATION: &str = "fsort";
 
 /// Help text for the config command-line option
 pub const CONFIG_HELP: &str = "Read from a specific config file";

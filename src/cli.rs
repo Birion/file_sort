@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use atty::Stream;
 use clap::{command, crate_authors, crate_description, crate_name, crate_version, Arg, ArgMatches};
 
@@ -24,7 +24,12 @@ pub fn check_for_stdout_stream() {
 /// Returns an error if the command-line arguments cannot be parsed
 pub fn get_configuration_file_option() -> Result<ArgMatches> {
     let argument_matches = get_matches()?;
-    argument_matches.get_one::<String>("config").unwrap();
+
+    // Verify that the config option exists
+    argument_matches
+        .get_one::<String>("config")
+        .ok_or_else(|| anyhow!("Configuration file option not found"))?;
+
     Ok(argument_matches)
 }
 
