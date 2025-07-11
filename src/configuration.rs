@@ -97,7 +97,7 @@ impl Config {
                 let title = &rule.title;
 
                 // Log the file found and rule being applied
-                let message = format!("{} found! Applying setup for {}.", source_filename, title);
+                let message = format!("{source_filename} found! Applying setup for {title}.");
                 let colored_message = format!(
                     "{} found! Applying setup for {}.",
                     source_filename.bold(),
@@ -108,7 +108,7 @@ impl Config {
                 // Log the new filename if changed
                 if applied_rule.is_changed()? {
                     let target_filename = applied_rule.target_filename()?;
-                    let message = format!("New filename: {}", target_filename);
+                    let message = format!("New filename: {target_filename}");
                     let colored_message = format!("New filename: {}", target_filename.bold().red());
                     info!("{}", format_message(&message, &colored_message));
                 }
@@ -264,12 +264,12 @@ fn execute_based_on_configuration(configuration: &Config, is_dry_run: bool) -> R
     for (index, file) in configuration.files.iter().enumerate() {
         debug!("Processing file {}/{}: {:?}", index + 1, file_count, file);
         configuration.process(file, is_dry_run).map_err(|e| {
-            error!("Failed to process file {:?}: {}", file, e);
-            anyhow!("Failed to process file {:?}: {}", file, e)
+            error!("Failed to process file {file:?}: {e}");
+            anyhow!("Failed to process file {file:?}: {e}")
         })?;
     }
 
-    info!("Finished processing {} files", file_count);
+    info!("Finished processing {file_count} files");
     Ok(())
 }
 
