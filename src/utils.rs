@@ -1,15 +1,17 @@
+use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 
-use chrono::TimeZone;
-use chrono::Utc;
-use once_cell::sync::Lazy;
-use regex::{Captures, Regex};
-
+use crate::constants::{APPLICATION, ORGANIZATION, QUALIFIER};
 use crate::errors::{
     generic_error, path_operation_error, pattern_extraction_error, pattern_matching_error, Result,
 };
 use crate::processor::Processor;
 use crate::rules::Rule;
+use chrono::TimeZone;
+use chrono::Utc;
+use directories::ProjectDirs;
+use once_cell::sync::Lazy;
+use regex::{Captures, Regex};
 
 /// Helper method to clean the pattern by removing angle brackets
 pub fn clean_pattern(pattern: &str) -> Result<String> {
@@ -62,8 +64,7 @@ pub fn process_date(
 
     if parts.len() < 2 {
         return Err(generic_error(&format!(
-            "Failed to split destination '{}' with splitter '{}'",
-            destination, splitter
+            "Failed to split destination '{destination}' with splitter '{splitter}'"
         )));
     }
 
@@ -120,4 +121,14 @@ pub(crate) fn generate_target(processor: &Processor, rule: &Rule, root: &Path) -
             processor.make_destination(&rule.new_pattern, Some(&directory), rule)
         }
     }
+}
+
+pub(crate) fn find_project_folder() -> Result<ProjectDirs> {
+    let folder = ProjectDirs::from(QUALIFIER, ORGANIZATION, APPLICATION)
+        .ok_or_else(|| generic_error("Failed to determine project directories"))?;
+
+    if !folder.config_dir().exists() {
+        create_dir_all(folder.config_dir())?;
+    }
+    Ok(folder)
 }

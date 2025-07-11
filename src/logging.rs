@@ -1,3 +1,4 @@
+use crate::constants::LOG_FILE_DEFAULT;
 use anyhow::Result;
 use chrono::SecondsFormat;
 use fern::colors::{Color, ColoredLevelConfig};
@@ -30,7 +31,7 @@ impl FromStr for LogLevel {
             "info" => Ok(LogLevel::Info),
             "debug" => Ok(LogLevel::Debug),
             "trace" => Ok(LogLevel::Trace),
-            _ => Err(format!("Unknown verbosity level: {}", s)),
+            _ => Err(format!("Unknown verbosity level: {s}")),
         }
     }
 }
@@ -58,7 +59,7 @@ impl LogLevel {
 }
 
 /// Initialise the logger with the specified verbosity level
-pub fn init_logger(verbosity: LogLevel) -> Result<()> {
+pub fn init_logger(verbosity: LogLevel, log_file: &str) -> Result<()> {
     let base_logger = Dispatch::new().level(verbosity.to_level_filter());
 
     let file_logger = Dispatch::new()
@@ -72,7 +73,7 @@ pub fn init_logger(verbosity: LogLevel) -> Result<()> {
             ))
         })
         .level(verbosity.to_level_filter())
-        .chain(fern::log_file("fsort.log")?);
+        .chain(fern::log_file(log_file)?);
 
     let colors_line = ColoredLevelConfig::new()
         .error(Color::Red)
@@ -97,14 +98,14 @@ pub fn init_logger(verbosity: LogLevel) -> Result<()> {
         .chain(output_logger)
         .apply()?;
 
-    log::debug!("Logger initialized with verbosity level: {:?}", verbosity);
+    log::debug!("Logger initialized with verbosity level: {verbosity:?}");
 
     Ok(())
 }
 
 /// Initialise the logger with the default verbosity level (Info)
 pub fn init_default_logger() -> Result<()> {
-    init_logger(LogLevel::Info)
+    init_logger(LogLevel::Info, LOG_FILE_DEFAULT)
 }
 
 /// Format a message with colour support
