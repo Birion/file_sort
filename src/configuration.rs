@@ -1,11 +1,9 @@
 use std::fs;
-use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 use colored::Colorize;
-use directories::ProjectDirs;
 use glob::glob;
 use log::{debug, error, info};
 use regex::Regex;
@@ -15,12 +13,12 @@ use serde_yaml::from_str;
 use crate::errors::{generic_error, invalid_filename_error};
 
 use crate::cli::check_for_stdout_stream;
-use crate::constants::{APPLICATION, ORGANIZATION, QUALIFIER, WILDCARD};
+use crate::constants::WILDCARD;
 use crate::logging::format_message;
 use crate::parser::*;
 use crate::processor::Processor;
 use crate::rules::{Rule, RulesList};
-use crate::utils::generate_target;
+use crate::utils::{find_project_folder, generate_target};
 
 /// Configuration for the file sorting application
 ///
@@ -201,8 +199,8 @@ pub fn perform_processing_based_on_configuration(argument_matches: ArgMatches) -
 fn prepare_configuration(configuration: &mut Config) -> Result<()> {
     // Get files from the download folder
     configuration.get_files().map_err(|e| {
-        error!("Failed to read the download folder: {}", e);
-        anyhow!("Couldn't read the download folder: {}", e)
+        error!("Failed to read the download folder: {e}");
+        anyhow!("Couldn't read the download folder: {e}")
     })?;
 
     debug!(
@@ -306,11 +304,6 @@ pub fn read_or_create(config: PathBuf) -> Result<PathBuf> {
 /// # Errors
 /// * Returns an error if the configuration directory cannot be created
 fn create_config_if_not_exists(config: PathBuf) -> Result<PathBuf> {
-    let folder = ProjectDirs::from(QUALIFIER, ORGANIZATION, APPLICATION)
-        .ok_or_else(|| generic_error("Failed to determine project directories"))?;
-
-    if !folder.config_dir().exists() {
-        create_dir_all(folder.config_dir())?;
-    }
+    let folder = find_project_folder()?;
     Ok(folder.config_dir().join(config))
 }
