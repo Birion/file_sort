@@ -1,24 +1,23 @@
 use std::fs;
+use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 use colored::Colorize;
-use glob::glob;
 use log::{debug, error, info};
 use regex::Regex;
 use serde::Deserialize;
 use serde_yaml::from_str;
 
-use crate::errors::{generic_error, invalid_filename_error};
+use crate::errors::generic_error;
 
 use crate::cli::check_for_stdout_stream;
-use crate::constants::WILDCARD;
 use crate::logging::format_message;
 use crate::parser::*;
 use crate::processor::Processor;
 use crate::rules::{Rule, RulesList};
-use crate::utils::{find_project_folder, generate_target};
+use crate::utils::{find_project_folder, generate_target, is_hidden_file};
 
 /// Configuration for the file sorting application
 ///
@@ -48,14 +47,13 @@ impl Config {
     /// # Errors
     /// Returns an error if the download directory cannot be read or if a file path is invalid
     pub fn get_files(&mut self) -> Result<()> {
-        let download_path = self.download.join(WILDCARD);
-        let path_str = download_path
-            .to_str()
-            .ok_or_else(|| invalid_filename_error(download_path.clone()))?;
-
-        for file_path in glob(path_str)? {
-            self.files.insert(0, file_path?);
-        }
+        self.files = read_dir(&self.download)?
+            .filter_map(Result::ok)
+            .map(|entry| entry.path())
+            .filter(|path| !is_hidden_file(path))
+            .filter(|path| path.is_file())
+            .collect();
+        info!("{:?}", self.files);
         Ok(())
     }
 
