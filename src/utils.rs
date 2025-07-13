@@ -132,3 +132,21 @@ pub(crate) fn find_project_folder() -> Result<ProjectDirs> {
     }
     Ok(folder)
 }
+
+#[cfg(unix)]
+pub(crate) fn is_hidden_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map_or(false, |name| name.starts_with('.'))
+}
+
+#[cfg(windows)]
+pub(crate) fn is_hidden_file(path: &Path) -> bool {
+    use std::os::windows::fs::MetadataExt;
+
+    if let Ok(metadata) = path.metadata() {
+        metadata.file_attributes() & 0x2 != 0 // FILE_ATTRIBUTE_HIDDEN
+    } else {
+        false
+    }
+}
