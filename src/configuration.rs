@@ -53,7 +53,6 @@ impl Config {
             .filter(|path| !is_hidden_file(path))
             .filter(|path| path.is_file())
             .collect();
-        info!("{:?}", self.files);
         Ok(())
     }
 
