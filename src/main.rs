@@ -11,7 +11,11 @@ fn main() -> Result<()> {
 
     // Initialise the logger with the verbosity level from the command-line arguments
     let verbosity = get_verbosity(&matches);
-    let log_file = get_log_file(&matches);
+    let log_file = if matches.get_flag("dry") {
+        String::default()
+    } else {
+        get_log_file(&matches)
+    };
     init_logger(verbosity, &log_file)?;
 
     // Process files based on the configuration

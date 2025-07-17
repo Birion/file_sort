@@ -43,7 +43,7 @@ impl Processor {
         is_copy_operation: bool,
         is_rename_operation: bool,
     ) -> Result<()> {
-        let options = CopyOptions::new();
+        let options = CopyOptions::new().overwrite(true);
         if is_copy_operation {
             copy(&self.source, &self.target, &options).map_err(|e| {
                 file_operation_error(std::io::Error::other(e), self.source.clone(), "copy")

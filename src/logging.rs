@@ -62,19 +62,6 @@ impl LogLevel {
 pub fn init_logger(verbosity: LogLevel, log_file: &str) -> Result<()> {
     let base_logger = Dispatch::new().level(verbosity.to_level_filter());
 
-    let file_logger = Dispatch::new()
-        .format(|out, message, record| {
-            out.finish(format_args!(
-                "[{} {} {}] {}",
-                chrono::Local::now().to_rfc3339_opts(SecondsFormat::Secs, true),
-                record.level(),
-                record.target(),
-                message
-            ))
-        })
-        .level(verbosity.to_level_filter())
-        .chain(fern::log_file(log_file)?);
-
     let colors_line = ColoredLevelConfig::new()
         .error(Color::Red)
         .warn(Color::Yellow)
@@ -93,10 +80,26 @@ pub fn init_logger(verbosity: LogLevel, log_file: &str) -> Result<()> {
         .level(verbosity.to_level_filter())
         .chain(std::io::stdout());
 
-    base_logger
-        .chain(file_logger)
-        .chain(output_logger)
-        .apply()?;
+    if !log_file.is_empty() {
+        let file_logger = Dispatch::new()
+            .format(|out, message, record| {
+                out.finish(format_args!(
+                    "[{} {} {}] {}",
+                    chrono::Local::now().to_rfc3339_opts(SecondsFormat::Secs, true),
+                    record.level(),
+                    record.target(),
+                    message
+                ))
+            })
+            .level(verbosity.to_level_filter())
+            .chain(fern::log_file(log_file)?);
+        base_logger
+            .chain(file_logger)
+            .chain(output_logger)
+            .apply()?;
+    } else {
+        base_logger.chain(output_logger).apply()?;
+    }
 
     log::debug!("Logger initialized with verbosity level: {verbosity:?}");
 
