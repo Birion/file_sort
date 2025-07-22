@@ -16,7 +16,8 @@ use regex::{Captures, Regex};
 /// Helper method to clean the pattern by removing angle brackets
 pub fn clean_pattern(pattern: &str) -> Result<String> {
     static CLEAN_RE: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"[<>]").expect("Failed to compile regex pattern for clean_pattern")
+        Regex::new(r"[<>]").map_err(|e| pattern_matching_error(e, r"[<>]"))
+            .expect("Failed to compile regex pattern for clean_pattern - this is a static initialization error and should never happen")
     });
     Ok(CLEAN_RE.replace_all(pattern, "").to_string())
 }
@@ -24,7 +25,8 @@ pub fn clean_pattern(pattern: &str) -> Result<String> {
 /// Helper method to extract content between angle brackets
 pub fn extract_pattern(pattern: &str) -> Result<String> {
     static EXTRACT_RE: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r".*<(.*)>.*").expect("Failed to compile regex pattern for extract_pattern")
+        Regex::new(r".*<(.*)>.*").map_err(|e| pattern_matching_error(e, r".*<(.*)>.*"))
+            .expect("Failed to compile regex pattern for extract_pattern - this is a static initialization error and should never happen")
     });
 
     let captures: Option<Captures> = EXTRACT_RE.captures(pattern);

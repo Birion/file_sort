@@ -74,7 +74,8 @@ impl Processor {
     /// * Returns an error if pattern extraction or matching fails
     pub(crate) fn parse_dir(&self, directory: &Path) -> Result<PathBuf> {
         static GROUP_PATTERN: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r".*<(.*)>.*").expect("Failed to compile regex pattern for GROUP_PATTERN")
+            Regex::new(r".*<(.*)>.*").map_err(|e| pattern_matching_error(e, r".*<(.*)>.*"))
+                .expect("Failed to compile regex pattern for GROUP_PATTERN - this is a static initialization error and should never happen")
         });
 
         let directory_string = directory

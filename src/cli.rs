@@ -1,4 +1,3 @@
-use anyhow::{anyhow, Result};
 use atty::Stream;
 use clap::{command, crate_authors, crate_description, crate_name, crate_version, Arg, ArgMatches};
 
@@ -6,6 +5,7 @@ use crate::constants::{
     CONFIG_HELP, DEFAULT_CONFIG_PATH, DRY_RUN_HELP, LOCAL_LOGGING_HELP, LOG_FILE_DEFAULT,
     LOG_FILE_HELP, VERBOSE_HELP,
 };
+use crate::errors::{generic_error, Result};
 use crate::logging::LogLevel;
 use crate::utils::find_project_folder;
 
@@ -32,7 +32,7 @@ pub fn get_configuration_file_option() -> Result<ArgMatches> {
     // Verify that the config option exists
     argument_matches
         .get_one::<String>("config")
-        .ok_or_else(|| anyhow!("Configuration file option not found"))?;
+        .ok_or_else(|| generic_error("Configuration file option not found"))?;
 
     Ok(argument_matches)
 }
@@ -134,21 +134,18 @@ pub fn get_verbosity(matches: &ArgMatches) -> LogLevel {
     LogLevel::from_occurrences(verbose_count)
 }
 
-pub fn get_log_file(matches: &ArgMatches) -> String {
+pub fn get_log_file(matches: &ArgMatches) -> Result<String> {
     let filename = matches
         .get_one::<String>("log_file")
         .cloned()
         .unwrap_or_else(|| LOG_FILE_DEFAULT.to_string());
     if matches.get_flag("log_locally") {
-        filename
+        Ok(filename)
     } else {
-        let folder = find_project_folder().unwrap();
-        folder
-            .config_dir()
-            .join(filename)
-            .as_path()
-            .to_str()
-            .unwrap()
-            .to_string()
+        let folder = find_project_folder()?;
+        let path = folder.config_dir().join(filename);
+        let path_str = path.as_path().to_str()
+            .ok_or_else(|| generic_error(&format!("Failed to convert path to string: {:?}", path)))?;
+        Ok(path_str.to_string())
     }
 }

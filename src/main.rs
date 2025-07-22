@@ -14,7 +14,7 @@ fn main() -> Result<()> {
     let log_file = if matches.get_flag("dry") {
         String::default()
     } else {
-        get_log_file(&matches)
+        get_log_file(&matches)?
     };
     init_logger(verbosity, &log_file)?;
 
