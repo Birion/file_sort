@@ -127,7 +127,7 @@ impl Processor {
     ) -> Result<PathBuf> {
         let mut processed_value: String = self.parse_file(new_name)?;
         let root = match root {
-            None => &self.target,
+            None => self.target(),
             Some(r) => r,
         };
 

@@ -267,7 +267,9 @@ impl Config {
     /// # Errors
     /// Returns an error if the file cannot be processed
     pub fn process(&self, file: &Path, run_execution: bool) -> Result<()> {
-        let mut file_processor = Processor::new(file);
+        // Create a processor using the builder pattern
+        let mut file_processor = Processor::builder(file).build();
+
         for rule in &self.rules {
             if let Ok(applied_rule) = self.apply_rule(rule, &mut file_processor) {
                 let source_filename = applied_rule.source_filename()?;
@@ -323,7 +325,8 @@ impl Config {
                 Some(dir) => dir.to_owned(),
             };
             processor.create_and_set_target_directory(root_path, &directory)?;
-            processor.target = generate_target(processor, rule, &processor.target)?;
+            let target = generate_target(processor, rule, processor.target())?;
+            processor.set_target(target);
             Ok(processor.to_owned())
         } else {
             Err(anyhow!("Pattern doesn't match."))

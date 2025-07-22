@@ -30,13 +30,13 @@ impl Processor {
     /// # Returns
     /// * `Result<&str>` - The filename as a string, or an error if the filename cannot be extracted or converted
     pub(crate) fn source_filename(&self) -> Result<&str> {
-        self.source
+        self.source()
             .file_name()
-            .ok_or_else(|| path_operation_error(self.source.clone(), "get filename"))
+            .ok_or_else(|| path_operation_error(self.source().clone(), "get filename"))
             .and_then(|os_str| {
                 os_str
                     .to_str()
-                    .ok_or_else(|| invalid_filename_error(self.source.clone()))
+                    .ok_or_else(|| invalid_filename_error(self.source().clone()))
             })
     }
 
@@ -47,13 +47,13 @@ impl Processor {
     /// # Returns
     /// * `Result<&str>` - The filename as a string, or an error if the filename cannot be extracted or converted
     pub(crate) fn target_filename(&self) -> Result<&str> {
-        self.target
+        self.target()
             .file_name()
-            .ok_or_else(|| path_operation_error(self.target.clone(), "get filename"))
+            .ok_or_else(|| path_operation_error(self.target().clone(), "get filename"))
             .and_then(|os_str| {
                 os_str
                     .to_str()
-                    .ok_or_else(|| invalid_filename_error(self.target.clone()))
+                    .ok_or_else(|| invalid_filename_error(self.target().clone()))
             })
     }
 
