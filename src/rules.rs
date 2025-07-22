@@ -97,6 +97,7 @@ impl Rule {
     /// # Examples
     /// ```
     /// # use file_sort::rules::Rule;
+    /// # use file_sort::errors::Error;
     /// let mut rule = Rule {
     ///     title: "Test Rule".to_string(),
     ///     pattern: Some("<pattern>".to_string()),
@@ -113,7 +114,7 @@ impl Rule {
     /// rule.make_patterns()?;
     /// assert_eq!(rule.old_pattern, "pattern");
     /// assert_eq!(rule.new_pattern, "pattern");
-    /// # Ok(())
+    /// # Ok::<(), Error>(())
     /// ```
     pub fn make_patterns(&mut self) -> Result<()> {
         if let Some(pattern) = &self.pattern {
