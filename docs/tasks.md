@@ -11,7 +11,7 @@ logically ordered and covers both architectural and code-level improvements.
 4. [x] Extract hardcoded constants to a dedicated configuration module
 5. [x] Improve code organisation by splitting large files into smaller, more focused modules
 6. [x] Implement proper error propagation instead of using unwrap() and expect()
-7. [ ] Add input validation for configuration files with helpful error messages
+7. [x] Add input validation for configuration files with helpful error messages
 8. [ ] Refactor the Processor struct to follow the builder pattern for better readability
 9. [ ] Implement proper unit tests for all core functionality
 

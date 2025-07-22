@@ -67,10 +67,192 @@ impl Config {
     /// # Errors
     /// Returns an error if the file cannot be read or if the configuration is invalid
     pub fn load(file: PathBuf) -> Result<Config> {
-        let file_content = fs::read(file)?;
-        let content_str = String::from_utf8(file_content)?;
-        let config: Config = from_str(&content_str)?;
+        let file_content = fs::read(&file).map_err(|e| {
+            anyhow!(
+                "Failed to read configuration file {}: {}",
+                file.display(),
+                e
+            )
+        })?;
+
+        let content_str = String::from_utf8(file_content).map_err(|e| {
+            anyhow!(
+                "Configuration file {} contains invalid UTF-8 characters: {}",
+                file.display(),
+                e
+            )
+        })?;
+
+        let config: Config = from_str(&content_str).map_err(|e| {
+            anyhow!(
+                "Failed to parse configuration file {}: {}\nPlease check the YAML syntax.",
+                file.display(),
+                e
+            )
+        })?;
+
+        // Validate the configuration
+        config.validate(true)?;
+
         Ok(config)
+    }
+
+    /// Loads a configuration from a file without checking path existence
+    ///
+    /// This is primarily used for testing.
+    ///
+    /// # Arguments
+    /// * `file` - Path to the configuration file
+    ///
+    /// # Returns
+    /// * `Result<Config>` - The loaded configuration or an error
+    ///
+    /// # Errors
+    /// Returns an error if the file cannot be read or if the configuration is invalid
+    pub fn load_for_testing(file: PathBuf) -> Result<Config> {
+        let file_content = fs::read(&file).map_err(|e| {
+            anyhow!(
+                "Failed to read configuration file {}: {}",
+                file.display(),
+                e
+            )
+        })?;
+
+        let content_str = String::from_utf8(file_content).map_err(|e| {
+            anyhow!(
+                "Configuration file {} contains invalid UTF-8 characters: {}",
+                file.display(),
+                e
+            )
+        })?;
+
+        let config: Config = from_str(&content_str).map_err(|e| {
+            anyhow!(
+                "Failed to parse configuration file {}: {}\nPlease check the YAML syntax.",
+                file.display(),
+                e
+            )
+        })?;
+
+        // Validate the configuration without checking path existence
+        config.validate(false)?;
+
+        Ok(config)
+    }
+
+    /// Validates the configuration
+    ///
+    /// This method performs comprehensive validation of the configuration:
+    /// - Checks that required fields are present
+    /// - Validates that paths exist and are accessible (if check_paths is true)
+    /// - Ensures rules are properly formatted
+    ///
+    /// # Arguments
+    /// * `check_paths` - Whether to check if paths exist and are accessible
+    ///
+    /// # Returns
+    /// * `Result<()>` - Success or an error with a helpful message
+    ///
+    /// # Errors
+    /// Returns an error with a detailed message if validation fails
+    pub fn validate(&self, check_paths: bool) -> Result<()> {
+        // Validate root directories
+        if self.root.is_empty() {
+            return Err(anyhow!(
+                "No root directories specified in configuration. At least one root directory is required."
+            ));
+        }
+
+        if check_paths {
+            for (index, path) in self.root.iter().enumerate() {
+                if !path.exists() {
+                    return Err(anyhow!(
+                        "Root directory {} at index {} does not exist: {}",
+                        path.display(),
+                        index,
+                        "Please check the path and ensure it exists."
+                    ));
+                }
+
+                if !path.is_dir() {
+                    return Err(anyhow!(
+                        "Root path {} at index {} is not a directory: {}",
+                        path.display(),
+                        index,
+                        "Please specify a valid directory path."
+                    ));
+                }
+            }
+
+            // Validate download directory
+            if !self.download.exists() {
+                return Err(anyhow!(
+                    "Download directory does not exist: {}\n{}",
+                    self.download.display(),
+                    "Please check the path and ensure it exists."
+                ));
+            }
+
+            if !self.download.is_dir() {
+                return Err(anyhow!(
+                    "Download path is not a directory: {}\n{}",
+                    self.download.display(),
+                    "Please specify a valid directory path."
+                ));
+            }
+        }
+
+        // Validate rules
+        if self.rules.is_empty() {
+            return Err(anyhow!(
+                "No rules specified in configuration. At least one rule is required."
+            ));
+        }
+
+        // Validate each rule
+        for (index, rule) in self.rules.iter().enumerate() {
+            // Check rule title
+            if rule.title.trim().is_empty() {
+                return Err(anyhow!(
+                    "Rule at index {} has an empty title. Each rule must have a title.",
+                    index
+                ));
+            }
+
+            // Check that either pattern or patterns is specified
+            if rule.pattern.is_none() && rule.patterns.is_none() {
+                return Err(anyhow!(
+                    "Rule '{}' has no pattern or patterns specified. Each rule must have at least one pattern.",
+                    rule.title
+                ));
+            }
+
+            // Check that root index is valid
+            if rule.root >= self.root.len() {
+                return Err(anyhow!(
+                    "Rule '{}' references root index {} which is out of bounds (max index: {}).",
+                    rule.title,
+                    rule.root,
+                    self.root.len() - 1
+                ));
+            }
+
+            // If a directory is specified and we're checking paths, check that it's valid
+            if check_paths && let Some(dir) = &rule.directory {
+                let full_path = self.root[rule.root].join(dir);
+                if !full_path.exists() && rule.function.is_none() {
+                    // Only warn if no transformative function is specified
+                    // as the function might create the directory
+                    debug!(
+                        "Warning: Directory for rule '{}' does not exist: {}",
+                        rule.title,
+                        full_path.display()
+                    );
+                }
+            }
+        }
+
+        Ok(())
     }
 
     /// Processes a file according to the rules in the configuration
