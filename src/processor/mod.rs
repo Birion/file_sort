@@ -8,4 +8,4 @@ mod file_operations;
 mod path_handling;
 mod pattern_matching;
 
-pub use core::Processor;
+pub use core::{Processor, ProcessorBuilder};

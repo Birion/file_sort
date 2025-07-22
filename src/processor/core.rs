@@ -18,20 +18,6 @@ pub struct Processor {
 }
 
 impl Processor {
-    /// Creates a new Processor instance for the given file
-    ///
-    /// # Arguments
-    /// * `file` - The path to the file to be processed
-    ///
-    /// # Returns
-    /// * `Processor` - A new Processor instance with the source set to the given file
-    pub(crate) fn new(file: &Path) -> Processor {
-        Processor {
-            source: file.to_path_buf(),
-            target: PathBuf::new(),
-        }
-    }
-
     /// Creates a new ProcessorBuilder for building a Processor instance
     ///
     /// # Arguments
@@ -39,17 +25,17 @@ impl Processor {
     ///
     /// # Returns
     /// * `ProcessorBuilder` - A new ProcessorBuilder instance with the source set to the given file
-    pub(crate) fn builder(file: &Path) -> ProcessorBuilder {
+    pub fn builder(file: &Path) -> ProcessorBuilder {
         ProcessorBuilder::new(file)
     }
 
     /// Gets a reference to the source path
-    pub(crate) fn source(&self) -> &PathBuf {
+    pub fn source(&self) -> &PathBuf {
         &self.source
     }
 
     /// Gets a reference to the target path
-    pub(crate) fn target(&self) -> &PathBuf {
+    pub fn target(&self) -> &PathBuf {
         &self.target
     }
 
@@ -84,7 +70,7 @@ impl ProcessorBuilder {
     ///
     /// # Returns
     /// * `ProcessorBuilder` - A new ProcessorBuilder instance with the source set to the given file
-    pub(crate) fn new(file: &Path) -> ProcessorBuilder {
+    pub fn new(file: &Path) -> ProcessorBuilder {
         ProcessorBuilder {
             source: file.to_path_buf(),
             target: PathBuf::new(),
@@ -98,7 +84,7 @@ impl ProcessorBuilder {
     ///
     /// # Returns
     /// * `ProcessorBuilder` - The builder instance for method chaining
-    pub(crate) fn source(mut self, source: PathBuf) -> ProcessorBuilder {
+    pub fn source(mut self, source: PathBuf) -> ProcessorBuilder {
         self.source = source;
         self
     }
@@ -110,7 +96,7 @@ impl ProcessorBuilder {
     ///
     /// # Returns
     /// * `ProcessorBuilder` - The builder instance for method chaining
-    pub(crate) fn target(mut self, target: PathBuf) -> ProcessorBuilder {
+    pub fn target(mut self, target: PathBuf) -> ProcessorBuilder {
         self.target = target;
         self
     }
@@ -119,7 +105,7 @@ impl ProcessorBuilder {
     ///
     /// # Returns
     /// * `Processor` - The built Processor instance
-    pub(crate) fn build(self) -> Processor {
+    pub fn build(self) -> Processor {
         Processor {
             source: self.source,
             target: self.target,
