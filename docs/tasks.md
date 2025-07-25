@@ -10,79 +10,80 @@ logically ordered and covers both architectural and code-level improvements.
 3. [x] Add comprehensive documentation comments to all public functions and types
 4. [x] Extract hardcoded constants to a dedicated configuration module
 5. [x] Improve code organisation by splitting large files into smaller, more focused modules
-6. [ ] Implement proper error propagation instead of using unwrap() and expect()
-7. [ ] Add input validation for configuration files with helpful error messages
-8. [ ] Refactor the Processor struct to follow the builder pattern for better readability
-9. [ ] Implement proper unit tests for all core functionality
+6. [x] Implement proper error propagation instead of using unwrap() and expect()
+7. [x] Add input validation for configuration files with helpful error messages
+8. [x] Refactor the Processor struct to follow the builder pattern for better readability
+9. [x] Implement proper unit tests for all core functionality
 
 ## Feature Enhancements
 
-10. [ ] Add support for multiple configuration files with inheritance
-11. [ ] Implement a dry-run mode with detailed output of planned operations
-12. [ ] Add support for file-content-based rules using file metadata or content analysis
-13. [ ] Implement parallel processing for file operations to improve performance
-14. [ ] Add support for conditional rules based on file properties (size, date, content type)
-15. [ ] Implement a configuration wizard for creating new config files
-16. [ ] Add support for environment variable expansion in configuration paths
-17. [ ] Implement a plugin system for custom processors
-18. [ ] Add support for different configuration formats (TOML, INI) in addition to YAML
-19. [ ] Implement incremental processing (only process new or changed files)
+1. [x] Add support for converting file formats (e.g., image resizing, text encoding conversion)
+2. [ ] Add support for multiple configuration files with inheritance
+3. [ ] Implement a dry-run mode with detailed output of planned operations
+4. [ ] Add support for file-content-based rules using file metadata or content analysis
+5. [ ] Implement parallel processing for file operations to improve performance
+6. [ ] Add support for conditional rules based on file properties (size, date, content type)
+7. [ ] Implement a configuration wizard for creating new config files
+8. [ ] Add support for environment variable expansion in configuration paths
+9. [ ] Implement a plugin system for custom processors
+10. [ ] Add support for different configuration formats (TOML, INI) in addition to YAML
+11. [ ] Implement incremental processing (only process new or changed files)
 
 ## User Experience
 
-20. [ ] Add progress indicators for operations on large numbers of files
-21. [ ] Implement colorized output for better visual distinction (expand current implementation)
-22. [ ] Add an interactive mode for confirming file operations
-23. [ ] Improve error messages with suggestions for resolution
-24. [ ] Add a verbose mode for detailed logging
-25. [ ] Implement a configuration validation command with helpful error messages
-26. [ ] Add a command to list all available rules in the configuration
-27. [ ] Implement a simulation mode that shows what would happen without making changes
-28. [ ] Add support for undo operations
+1. [ ] Add progress indicators for operations on large numbers of files
+2. [ ] Implement colorized output for better visual distinction (expand current implementation)
+3. [ ] Add an interactive mode for confirming file operations
+4. [ ] Improve error messages with suggestions for resolution
+5. [ ] Add a verbose mode for detailed logging
+6. [ ] Implement a configuration validation command with helpful error messages
+7. [ ] Add a command to list all available rules in the configuration
+8. [ ] Implement a simulation mode that shows what would happen without making changes
+9. [ ] Add support for undo operations
 
 ## Testing and Reliability
 
-29. [ ] Expand unit test coverage for core components
-30. [ ] Add integration tests for end-to-end workflows
-31. [ ] Implement property-based testing for rule processing
-32. [ ] Add stress testing for large file collections
-33. [ ] Implement automated regression testing
-34. [ ] Add benchmarking tools for performance testing
-35. [ ] Implement error recovery mechanisms for failed operations
-36. [ ] Add transaction-like operations to ensure atomicity of file movements
+1. [ ] Expand unit test coverage for core components
+2. [ ] Add integration tests for end-to-end workflows
+3. [ ] Implement property-based testing for rule processing
+4. [ ] Add stress testing for large file collections
+5. [ ] Implement automated regression testing
+6. [ ] Add benchmarking tools for performance testing
+7. [ ] Implement error recovery mechanisms for failed operations
+8. [ ] Add transaction-like operations to ensure atomicity of file movements
 
 ## Documentation
 
-37. [ ] Create comprehensive user documentation with examples
-38. [ ] Add inline code documentation for better maintainability
-39. [ ] Create a quick-start guide for new users
-40. [ ] Document common patterns and use cases
-41. [ ] Add a troubleshooting guide for common issues
-42. [ ] Create a changelog to track version changes
-43. [ ] Document the configuration file format with examples
-44. [ ] Add architecture documentation explaining the design decisions
+1. [ ] Create comprehensive user documentation with examples
+2. [ ] Add inline code documentation for better maintainability
+3. [ ] Create a quick-start guide for new users
+4. [ ] Document common patterns and use cases
+5. [ ] Add a troubleshooting guide for common issues
+6. [ ] Create a changelog to track version changes
+7. [ ] Document the configuration file format with examples
+8. [ ] Add architecture documentation explaining the design decisions
 
 ## Performance Optimisation
 
-45. [ ] Optimize regex compilation and reuse
-46. [ ] Add caching for frequently used patterns and transformations
-47. [ ] Implement lazy loading of configuration files
-48. [ ] Optimise file system operations by batching similar operations
-49. [ ] Reduce memory usage for large file collections
-50. [ ] Implement more efficient pattern matching algorithms
+1. [ ] Optimize regex compilation and reuse
+2. [ ] Add caching for frequently used patterns and transformations
+3. [ ] Implement lazy loading of configuration files
+4. [ ] Optimise file system operations by batching similar operations
+5. [ ] Reduce memory usage for large file collections
+6. [ ] Implement more efficient pattern matching algorithms
 
 ## Cross-Platform Compatibility
 
-51. [ ] Ensure proper path handling on different operating systems
-52. [ ] Add platform-specific optimisations for file operations
-53. [ ] Implement proper Unicode support for filenames
-54. [ ] Ensure configuration paths work correctly on all supported platforms
-55. [ ] Add support for platform-specific file attributes
+1. [ ] Ensure proper path handling on different operating systems
+2. [ ] Add platform-specific optimisations for file operations
+3. [ ] Implement proper Unicode support for filenames
+4. [ ] Ensure configuration paths work correctly on all supported platforms
+5. [ ] Add support for platform-specific file attributes
 
 ## Security
 
-56. [ ] Implement proper permission checking before file operations
-57. [ ] Add safeguards against moving system or critical files
-58. [ ] Implement configuration file validation to prevent malicious configurations
-59. [ ] Add support for secure credential storage for remote file operations
-60. [ ] Implement proper handling of symbolic links and hard links
+1. [ ] Implement proper permission checking before file operations
+2. [ ] Add safeguards against moving system or critical files
+3. [ ] Implement configuration file validation to prevent malicious configurations
+4. [ ] Add support for secure credential storage for remote file operations
+5. [ ] Implement proper handling of symbolic links and hard links

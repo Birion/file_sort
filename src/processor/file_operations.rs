@@ -44,14 +44,17 @@ impl Processor {
         is_rename_operation: bool,
     ) -> Result<()> {
         let options = CopyOptions::new().overwrite(true);
+        let source = self.source();
+        let target = self.target();
+
         if is_copy_operation {
-            copy(&self.source, &self.target, &options).map_err(|e| {
-                file_operation_error(std::io::Error::other(e), self.source.clone(), "copy")
+            copy(source, target, &options).map_err(|e| {
+                file_operation_error(std::io::Error::other(e), source.clone(), "copy")
             })?;
         }
         if is_rename_operation {
-            move_file(&self.source, &self.target, &options).map_err(|e| {
-                file_operation_error(std::io::Error::other(e), self.source.clone(), "move")
+            move_file(source, target, &options).map_err(|e| {
+                file_operation_error(std::io::Error::other(e), source.clone(), "move")
             })?;
         }
         Ok(())
@@ -79,11 +82,32 @@ impl Processor {
     ) -> Result<()> {
         let folder_full_path = full_path(root, folder);
 
-        self.target = self.parse_dir(&folder_full_path)?;
+        // Parse the directory and set the target
+        let parsed_dir = self.parse_dir(&folder_full_path)?;
+        *self.target_mut() = parsed_dir;
 
-        create_dir_all(&self.target)
-            .map_err(|e| file_operation_error(e, self.target.clone(), "create directory"))?;
+        // Create the target directory
+        create_dir_all(self.target())
+            .map_err(|e| file_operation_error(e, self.target().clone(), "create directory"))?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::processor::ProcessorBuilder;
+
+    #[test]
+    fn test_processor_builder() {
+        // Create a processor with source and target
+        let processor = ProcessorBuilder::new(Path::new("source_file.txt")).build();
+
+        // Verify that the source path is set correctly
+        assert_eq!(processor.source().to_str().unwrap(), "source_file.txt");
+
+        // Verify that the target path is empty
+        assert!(processor.target().as_os_str().is_empty());
     }
 }

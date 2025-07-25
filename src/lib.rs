@@ -2,11 +2,11 @@ pub mod cli;
 pub mod configuration;
 pub mod constants;
 pub mod errors;
+pub mod folder_function;
 pub mod logging;
 pub mod parser;
 pub mod processor;
 pub mod rules;
-pub mod transformative_function;
 pub mod utils;
 
 /// Prelude module that re-exports commonly used items

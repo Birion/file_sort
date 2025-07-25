@@ -3,7 +3,10 @@
 //! This module contains methods for handling file paths, including
 //! extracting filenames and parsing directory paths.
 
-use crate::errors::{invalid_filename_error, path_operation_error, pattern_extraction_error, pattern_matching_error, Result};
+use crate::errors::{
+    invalid_filename_error, path_operation_error, pattern_extraction_error, pattern_matching_error,
+    Result,
+};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::path::{Path, PathBuf};
@@ -30,13 +33,13 @@ impl Processor {
     /// # Returns
     /// * `Result<&str>` - The filename as a string, or an error if the filename cannot be extracted or converted
     pub(crate) fn source_filename(&self) -> Result<&str> {
-        self.source
+        self.source()
             .file_name()
-            .ok_or_else(|| path_operation_error(self.source.clone(), "get filename"))
+            .ok_or_else(|| path_operation_error(self.source().clone(), "get filename"))
             .and_then(|os_str| {
                 os_str
                     .to_str()
-                    .ok_or_else(|| invalid_filename_error(self.source.clone()))
+                    .ok_or_else(|| invalid_filename_error(self.source().clone()))
             })
     }
 
@@ -47,13 +50,13 @@ impl Processor {
     /// # Returns
     /// * `Result<&str>` - The filename as a string, or an error if the filename cannot be extracted or converted
     pub(crate) fn target_filename(&self) -> Result<&str> {
-        self.target
+        self.target()
             .file_name()
-            .ok_or_else(|| path_operation_error(self.target.clone(), "get filename"))
+            .ok_or_else(|| path_operation_error(self.target().clone(), "get filename"))
             .and_then(|os_str| {
                 os_str
                     .to_str()
-                    .ok_or_else(|| invalid_filename_error(self.target.clone()))
+                    .ok_or_else(|| invalid_filename_error(self.target().clone()))
             })
     }
 
@@ -74,7 +77,8 @@ impl Processor {
     /// * Returns an error if pattern extraction or matching fails
     pub(crate) fn parse_dir(&self, directory: &Path) -> Result<PathBuf> {
         static GROUP_PATTERN: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r".*<(.*)>.*").expect("Failed to compile regex pattern for GROUP_PATTERN")
+            Regex::new(r".*<(.*)>.*").map_err(|e| pattern_matching_error(e, r".*<(.*)>.*"))
+                .expect("Failed to compile regex pattern for GROUP_PATTERN - this is a static initialization error and should never happen")
         });
 
         let directory_string = directory
@@ -107,5 +111,28 @@ impl Processor {
             .replace(directory_string, &replace_part)
             .to_string();
         Ok(PathBuf::from(dir))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::processor::ProcessorBuilder;
+
+    #[test]
+    fn test_processor_source_target() {
+        // Create a processor with source and target
+        let processor = ProcessorBuilder::new(Path::new("source_file.txt"))
+            .target(PathBuf::from("target_dir/target_file.txt"))
+            .build();
+
+        // Verify that the source path is set correctly
+        assert_eq!(processor.source(), &PathBuf::from("source_file.txt"));
+
+        // Verify that the target path is set correctly
+        assert_eq!(
+            processor.target(),
+            &PathBuf::from("target_dir/target_file.txt")
+        );
     }
 }

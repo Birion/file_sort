@@ -119,3 +119,70 @@ pub fn format_message(message: &str, colored_message: &str) -> String {
         message.to_string()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_log_level_from_str() {
+        // Test valid log levels
+        assert_eq!(LogLevel::from_str("error").unwrap(), LogLevel::Error);
+        assert_eq!(LogLevel::from_str("warn").unwrap(), LogLevel::Warning);
+        assert_eq!(LogLevel::from_str("warning").unwrap(), LogLevel::Warning);
+        assert_eq!(LogLevel::from_str("info").unwrap(), LogLevel::Info);
+        assert_eq!(LogLevel::from_str("debug").unwrap(), LogLevel::Debug);
+        assert_eq!(LogLevel::from_str("trace").unwrap(), LogLevel::Trace);
+
+        // Test case insensitivity
+        assert_eq!(LogLevel::from_str("ERROR").unwrap(), LogLevel::Error);
+        assert_eq!(LogLevel::from_str("Warning").unwrap(), LogLevel::Warning);
+        assert_eq!(LogLevel::from_str("Info").unwrap(), LogLevel::Info);
+
+        // Test invalid log level
+        let result = LogLevel::from_str("invalid");
+        assert!(
+            result.is_err(),
+            "Should return an error for invalid log level"
+        );
+        assert_eq!(
+            result.unwrap_err(),
+            "Unknown verbosity level: invalid",
+            "Error message should indicate the unknown level"
+        );
+    }
+
+    #[test]
+    fn test_log_level_to_level_filter() {
+        // Test conversion to LevelFilter
+        assert_eq!(LogLevel::Error.to_level_filter(), LevelFilter::Error);
+        assert_eq!(LogLevel::Warning.to_level_filter(), LevelFilter::Warn);
+        assert_eq!(LogLevel::Info.to_level_filter(), LevelFilter::Info);
+        assert_eq!(LogLevel::Debug.to_level_filter(), LevelFilter::Debug);
+        assert_eq!(LogLevel::Trace.to_level_filter(), LevelFilter::Trace);
+    }
+
+    #[test]
+    fn test_log_level_from_occurrences() {
+        // Test conversion from occurrences
+        assert_eq!(LogLevel::from_occurrences(0), LogLevel::Info);
+        assert_eq!(LogLevel::from_occurrences(1), LogLevel::Debug);
+        assert_eq!(LogLevel::from_occurrences(2), LogLevel::Trace);
+        assert_eq!(LogLevel::from_occurrences(3), LogLevel::Trace);
+        assert_eq!(LogLevel::from_occurrences(255), LogLevel::Trace);
+    }
+
+    #[test]
+    fn test_format_message() {
+        // Since format_message depends on atty::is which checks if stdout is a terminal,
+        // we can't easily test both branches. We'll just test that it returns a string.
+        let plain_message = "Test message";
+        let colored_message = "\x1B[32mTest message\x1B[0m";
+
+        let result = format_message(plain_message, colored_message);
+        assert!(
+            result == plain_message || result == colored_message,
+            "Result should be either the plain message or the colored message"
+        );
+    }
+}

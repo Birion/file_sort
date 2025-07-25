@@ -1,6 +1,6 @@
 [package]
 name = "file_sort"
-version = "2.1.4"
+version = "2.2.0"
 authors = ["Ondřej Vágner <ondrej.vagner@gmail.com>"]
 edition = "2024"
 description = "Moves files into their appropriate folders"
@@ -20,14 +20,22 @@ fs_extra = "1.3"
 glob = "0.3"
 human-panic = "2.0"
 log = "0.4"
-regex = "1.10"
+regex = "1.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
 shellexpand = "3.1"
 once_cell = "1.19.0"
+image = "0.25"
+encoding_rs = "0.8.33"
+tempfile = "3.20"
 
 [build-dependencies]
 winres = "0.1"
+
+[dev-dependencies]
+tempfile = "3.20"
+assert_cmd = "2.0"
+predicates = "3.1"
 
 [[bin]]
 name = "fsort"
