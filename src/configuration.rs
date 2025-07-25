@@ -271,7 +271,7 @@ impl Config {
         let mut file_processor = Processor::builder(file).build();
 
         for rule in &self.rules {
-            if let Ok(applied_rule) = self.apply_rule(rule, &mut file_processor) {
+            if let Ok(applied_rule) = self.apply_rule(rule, &mut file_processor, run_execution) {
                 let source_filename = applied_rule.source_filename()?;
                 let title = &rule.title;
 
@@ -296,7 +296,7 @@ impl Config {
                 debug!("");
 
                 // Perform the file action if not a dry run
-                if !run_execution {
+                if run_execution {
                     applied_rule.perform_file_action(rule.copy)?;
                 }
             }
@@ -316,7 +316,12 @@ impl Config {
     ///
     /// # Errors
     /// Returns an error if the rule cannot be applied to the file
-    fn apply_rule(&self, rule: &Rule, processor: &mut Processor) -> Result<Processor> {
+    fn apply_rule(
+        &self,
+        rule: &Rule,
+        processor: &mut Processor,
+        run_execution: bool,
+    ) -> Result<Processor> {
         let root_path = &self.root[rule.root];
         let pattern = Regex::new(rule.old_pattern.as_str())?;
         if pattern.is_match(processor.source_filename()?) {
@@ -325,7 +330,9 @@ impl Config {
                 Some(dir) => dir.to_owned(),
             };
             processor.create_and_set_target_directory(root_path, &directory)?;
-            let target = generate_target(processor, rule, processor.target())?;
+            let (source, target) =
+                generate_target(processor, rule, processor.target(), run_execution)?;
+            processor.set_source(source);
             processor.set_target(target);
             Ok(processor.to_owned())
         } else {
@@ -443,7 +450,7 @@ fn execute_based_on_configuration(configuration: &Config, is_dry_run: bool) -> R
 
     for (index, file) in configuration.files.iter().enumerate() {
         debug!("Processing file {}/{}: {:?}", index + 1, file_count, file);
-        configuration.process(file, is_dry_run).map_err(|e| {
+        configuration.process(file, !is_dry_run).map_err(|e| {
             error!("Failed to process file {file:?}: {e}");
             anyhow!("Failed to process file {file:?}: {e}")
         })?;

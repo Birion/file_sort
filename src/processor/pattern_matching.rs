@@ -3,13 +3,14 @@
 //! This module contains methods for pattern matching and extraction,
 //! including resolving group substrings and parsing files.
 
+use super::convert_file_format;
+use super::core::Processor;
 use crate::errors::{generic_error, no_match_error, pattern_matching_error, Result};
+use crate::processor::format_conversion::{SUPPORTED_IMAGE_FORMATS, SUPPORTED_TEXT_ENCODINGS};
 use crate::rules::Rule;
 use crate::utils::{process_date, process_pattern};
 use regex::{Match, Regex};
 use std::path::{Path, PathBuf};
-
-use super::core::Processor;
 
 impl Processor {
     /// Resolves a substring from the source filename based on a range
@@ -124,7 +125,8 @@ impl Processor {
         new_name: &str,
         root: Option<&Path>,
         rule: &Rule,
-    ) -> Result<PathBuf> {
+        run_execution: bool,
+    ) -> Result<(PathBuf, PathBuf)> {
         let mut processed_value: String = self.parse_file(new_name)?;
         let root = match root {
             None => self.target(),
@@ -150,7 +152,32 @@ impl Processor {
             }
         }
 
-        Ok(root.join(PathBuf::from(processed_value)))
+        let target_path = root.join(PathBuf::from(processed_value));
+
+        // Apply format conversion if specified
+        if let Some(config_processor) = &rule.processors
+            && let Some(format_conversion) = &config_processor.format_conversion
+        {
+            // Create a temporary path for the converted file
+            let source_path = self.source().to_path_buf();
+
+            if (SUPPORTED_IMAGE_FORMATS.contains(&format_conversion.source_format.as_str())
+                && SUPPORTED_IMAGE_FORMATS
+                    .contains(&source_path.extension().unwrap().to_str().unwrap()))
+                || SUPPORTED_TEXT_ENCODINGS.contains(&format_conversion.source_format.as_str())
+            {
+                // Apply the format conversion
+                let converted_path = convert_file_format(
+                    &source_path,
+                    &target_path,
+                    format_conversion,
+                    run_execution,
+                )?;
+                return Ok(converted_path);
+            }
+        }
+
+        Ok((self.source().to_path_buf(), target_path))
     }
 }
 
@@ -298,5 +325,69 @@ mod tests {
 
         // Verify that the target path is set correctly
         assert_eq!(processor.target(), &PathBuf::from("target_dir"));
+    }
+
+    #[test]
+    fn test_format_conversion_integration() {
+        use crate::rules::{ConfigProcessor, FormatConversion, Rule};
+        use std::fs;
+        use tempfile::tempdir;
+
+        // Create a temporary directory for the test
+        let temp_dir = tempdir().unwrap();
+        let source_path = temp_dir.path().join("test.txt");
+        let target_dir = temp_dir.path().join("target");
+        fs::create_dir_all(&target_dir).unwrap();
+
+        // Create a test text file in UTF-8
+        let text = "Hello, world! 你好，世界！";
+        fs::write(&source_path, text).unwrap();
+
+        // Create a processor with the source file
+        let processor = ProcessorBuilder::new(&source_path)
+            .target(target_dir.clone())
+            .build();
+
+        // Create a rule with format conversion
+        let rule = Rule {
+            title: "Test Format Conversion".to_string(),
+            pattern: Some("<pattern>".to_string()),
+            patterns: None,
+            directory: None,
+            function: None,
+            processors: Some(ConfigProcessor {
+                splitter: None,
+                merger: None,
+                pattern: None,
+                date_format: None,
+                replacement: None,
+                format_conversion: Some(FormatConversion {
+                    source_format: "utf-8".to_string(),
+                    target_format: "utf-16".to_string(),
+                    resize: None,
+                }),
+            }),
+            root: 0,
+            copy: false,
+            old_pattern: "pattern".to_string(),
+            new_pattern: "pattern".to_string(),
+        };
+
+        // Call make_destination with the rule
+        let result = processor.make_destination("output.txt", Some(&target_dir), &rule, true);
+        assert!(result.is_ok());
+
+        let (_, target_path) = result.unwrap();
+        assert!(target_path.exists());
+
+        // Read the converted file
+        let mut file = fs::File::open(&target_path).unwrap();
+        let mut buffer = Vec::new();
+        use std::io::Read;
+        file.read_to_end(&mut buffer).unwrap();
+
+        // Decode the content using UTF-16LE
+        let (decoded, _, _) = encoding_rs::UTF_16LE.decode(&buffer);
+        assert_eq!(decoded, text);
     }
 }

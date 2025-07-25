@@ -6,10 +6,25 @@ use crate::errors::Result;
 use crate::folder_function::FolderFunction;
 use crate::utils::{clean_pattern, extract_pattern};
 
+/// Represents a file format conversion configuration
+///
+/// Specifies the source and target formats for file conversion
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct FormatConversion {
+    /// Source file format (e.g., "jpg", "png", "utf-8")
+    #[serde(alias = "from")]
+    pub source_format: String,
+    /// Target file format (e.g., "png", "webp", "utf-16")
+    #[serde(alias = "to")]
+    pub target_format: String,
+    /// Optional resize dimensions for image conversion (width, height)
+    pub resize: Option<(u32, u32)>,
+}
+
 /// Configuration for processing file paths
 ///
-/// Defines how file paths should be processed, including date formatting
-/// and pattern replacement.
+/// Defines how file paths should be processed, including date formatting,
+/// pattern replacement, and file format conversion.
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct ConfigProcessor {
     /// String to split the filename with
@@ -23,6 +38,8 @@ pub struct ConfigProcessor {
     pub date_format: Option<String>,
     /// Replacement string for pattern matching
     pub replacement: Option<String>,
+    /// File format conversion configuration
+    pub format_conversion: Option<FormatConversion>,
 }
 
 /// Default merger function for ConfigProcessor
@@ -344,6 +361,7 @@ mod tests {
                 pattern: Some("test".to_string()),
                 date_format: Some("%Y-%m-%d".to_string()),
                 replacement: Some("replaced".to_string()),
+                format_conversion: None,
             }),
             root: 0,
             copy: false,
@@ -371,6 +389,7 @@ mod tests {
                 pattern: None,
                 date_format: None,
                 replacement: None,
+                format_conversion: None,
             }),
             root: 0,
             copy: false,

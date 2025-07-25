@@ -48,6 +48,11 @@ impl Processor {
     pub(crate) fn set_target(&mut self, target: PathBuf) {
         self.target = target;
     }
+
+    /// Sets the source path
+    pub(crate) fn set_source(&mut self, source: PathBuf) {
+        self.source = source;
+    }
 }
 
 /// Builder for creating Processor instances

@@ -77,7 +77,7 @@ pub fn process_date(
     let creation_date: String = Utc
         .timestamp_opt(timestamp, 0)
         .single()
-        .ok_or_else(|| generic_error(&format!("Invalid timestamp: {}", timestamp)))?
+        .ok_or_else(|| generic_error(&format!("Invalid timestamp: {timestamp}")))?
         .format(fmt)
         .to_string();
 
@@ -110,17 +110,23 @@ pub fn process_pattern(
 }
 
 /// Generate the target path for a file based on the rule and processor
-pub(crate) fn generate_target(processor: &Processor, rule: &Rule, root: &Path) -> Result<PathBuf> {
+pub(crate) fn generate_target(
+    processor: &Processor,
+    rule: &Rule,
+    root: &Path,
+    run_execution: bool,
+) -> Result<(PathBuf, PathBuf)> {
     match &rule.function {
-        None => processor.make_destination(&rule.new_pattern, Some(root), rule),
+        None => processor.make_destination(&rule.new_pattern, Some(root), rule, run_execution),
         Some(func) => {
-            let temporary_root = processor.make_destination(&rule.new_pattern, None, rule)?;
+            let (_, temporary_root) =
+                processor.make_destination(&rule.new_pattern, None, rule, run_execution)?;
             let parent = temporary_root.parent().ok_or_else(|| {
                 path_operation_error(temporary_root.clone(), "get parent directory")
             })?;
 
             let directory = func.get_dir(parent)?;
-            processor.make_destination(&rule.new_pattern, Some(&directory), rule)
+            processor.make_destination(&rule.new_pattern, Some(&directory), rule, run_execution)
         }
     }
 }
