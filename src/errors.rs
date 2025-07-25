@@ -215,3 +215,192 @@ pub fn generic_error(message: &str) -> Error {
         message: message.to_string(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_file_operation_error() {
+        let path = PathBuf::from("/test/path");
+        let io_error = io::Error::new(io::ErrorKind::NotFound, "File not found");
+        let error = file_operation_error(io_error, path.clone(), "read");
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("read"),
+            "Error message should contain the operation"
+        );
+        assert!(
+            error_string.contains("/test/path"),
+            "Error message should contain the path"
+        );
+    }
+
+    #[test]
+    fn test_pattern_matching_error() {
+        let regex_error = RegexError::Syntax("Invalid regex syntax".to_string());
+        let error = pattern_matching_error(regex_error, "test-pattern");
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("test-pattern"),
+            "Error message should contain the pattern"
+        );
+    }
+
+    #[test]
+    fn test_glob_pattern_error() {
+        // Create a pattern that will cause an error
+        let result = glob::Pattern::new("[");
+        let pattern_error = result.err().unwrap();
+        let error = glob_pattern_error(pattern_error, "test-glob-pattern");
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("test-glob-pattern"),
+            "Error message should contain the pattern"
+        );
+    }
+
+    #[test]
+    fn test_path_operation_error() {
+        let path = PathBuf::from("/test/path");
+        let error = path_operation_error(path.clone(), "create");
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("create"),
+            "Error message should contain the operation"
+        );
+        assert!(
+            error_string.contains("/test/path"),
+            "Error message should contain the path"
+        );
+    }
+
+    #[test]
+    fn test_config_parsing_error() {
+        let io_error = io::Error::new(io::ErrorKind::InvalidData, "Invalid YAML");
+        let error = config_parsing_error(io_error, "Missing required field");
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("Missing required field"),
+            "Error message should contain the detail"
+        );
+    }
+
+    #[test]
+    fn test_pattern_extraction_error() {
+        let error = pattern_extraction_error("<test>", "Missing closing bracket");
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("<test>"),
+            "Error message should contain the pattern"
+        );
+        assert!(
+            error_string.contains("Missing closing bracket"),
+            "Error message should contain the detail"
+        );
+    }
+
+    #[test]
+    fn test_no_match_error() {
+        let error = no_match_error("pattern", "value");
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("pattern"),
+            "Error message should contain the pattern"
+        );
+        assert!(
+            error_string.contains("value"),
+            "Error message should contain the value"
+        );
+    }
+
+    #[test]
+    fn test_invalid_filename_error() {
+        let path = PathBuf::from("/test/invalid:file");
+        let error = invalid_filename_error(path.clone());
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("/test/invalid:file"),
+            "Error message should contain the path"
+        );
+    }
+
+    #[test]
+    fn test_directory_not_found_error() {
+        let path = PathBuf::from("/test/nonexistent");
+        let error = directory_not_found_error(path.clone());
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("/test/nonexistent"),
+            "Error message should contain the path"
+        );
+    }
+
+    #[test]
+    fn test_generic_error() {
+        let error = generic_error("Something went wrong");
+
+        // Check that the error contains the expected information
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("Something went wrong"),
+            "Error message should contain the message"
+        );
+    }
+
+    #[test]
+    fn test_error_conversion() {
+        // Test conversion from io::Error to Error
+        let io_error = io::Error::new(io::ErrorKind::NotFound, "File not found");
+        let error: Error = io_error.into();
+
+        // Check that the error is converted correctly
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("Failed to perform operation on file"),
+            "Error message should contain the underlying error"
+        );
+
+        // Test conversion from RegexError to Error
+        let regex_error = RegexError::Syntax("Invalid regex syntax".to_string());
+        let error: Error = regex_error.into();
+
+        // Check that the error is converted correctly
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("Invalid pattern"),
+            "Error message should contain the underlying error"
+        );
+
+        // Test conversion from PatternError to Error
+        // Create a pattern that will cause an error
+        let result = glob::Pattern::new("[");
+        let pattern_error = result.err().unwrap();
+        let error: Error = pattern_error.into();
+
+        // Check that the error is converted correctly
+        let error_string = format!("{error}");
+        assert!(
+            error_string.contains("Invalid glob pattern"),
+            "Error message should contain the underlying error"
+        );
+    }
+}
