@@ -154,10 +154,34 @@ pub fn get_log_file(matches: &ArgMatches) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use assert_cmd::Command;
     use predicates::prelude::*;
-    use crate::logging::LogLevel;
-    use crate::constants::{DEFAULT_CONFIG_PATH, LOG_FILE_DEFAULT};
+
+    fn make_test_command_logging() -> clap::Command {
+        clap::Command::new("fsort")
+            .arg(
+                Arg::new("log_file")
+                    .short('l')
+                    .long("log-file")
+                    .default_value(LOG_FILE_DEFAULT),
+            )
+            .arg(
+                Arg::new("log_locally")
+                    .short('L')
+                    .long("log-locally")
+                    .action(clap::ArgAction::SetTrue),
+            )
+    }
+
+    fn make_test_command_verbosity() -> clap::Command {
+        clap::Command::new("fsort").arg(
+            Arg::new("verbose")
+                .short('v')
+                .long("verbose")
+                .action(clap::ArgAction::Count),
+        )
+    }
 
     #[test]
     fn test_get_configuration_file_option_failure() {
@@ -172,7 +196,8 @@ mod tests {
         let mut cmd = Command::cargo_bin("fsort").expect("Failed to create command");
         let assert = cmd.arg("--help").assert();
 
-        assert.success()
+        assert
+            .success()
             .stdout(predicate::str::contains(DEFAULT_CONFIG_PATH));
     }
 
@@ -181,7 +206,8 @@ mod tests {
         let mut cmd = Command::cargo_bin("fsort").expect("Failed to create command");
         let assert = cmd.arg("--help").assert();
 
-        assert.success()
+        assert
+            .success()
             .stdout(predicate::str::contains("-c, --config"))
             .stdout(predicate::str::contains("Read from a specific config file"));
     }
@@ -191,7 +217,8 @@ mod tests {
         let mut cmd = Command::cargo_bin("fsort").expect("Failed to create command");
         let assert = cmd.arg("--help").assert();
 
-        assert.success()
+        assert
+            .success()
             .stdout(predicate::str::contains("-n, --dry"))
             .stdout(predicate::str::contains("Run without moving any files"));
     }
@@ -201,7 +228,8 @@ mod tests {
         let mut cmd = Command::cargo_bin("fsort").expect("Failed to create command");
         let assert = cmd.arg("--help").assert();
 
-        assert.success()
+        assert
+            .success()
             .stdout(predicate::str::contains("-v, --verbose"))
             .stdout(predicate::str::contains("Increase verbosity level"));
     }
@@ -211,7 +239,8 @@ mod tests {
         let mut cmd = Command::cargo_bin("fsort").expect("Failed to create command");
         let assert = cmd.arg("--help").assert();
 
-        assert.success()
+        assert
+            .success()
             .stdout(predicate::str::contains("-l, --log-file"))
             .stdout(predicate::str::contains("Path to the log file"));
     }
@@ -221,71 +250,50 @@ mod tests {
         let mut cmd = Command::cargo_bin("fsort").expect("Failed to create command");
         let assert = cmd.arg("--help").assert();
 
-        assert.success()
+        assert
+            .success()
             .stdout(predicate::str::contains("-L, --log-locally"))
-            .stdout(predicate::str::contains("Log messages in the current directory"));
+            .stdout(predicate::str::contains(
+                "Log messages in the current directory",
+            ));
     }
 
     #[test]
     fn test_get_verbosity_default() {
         // This is a unit test for the get_verbosity function
         // We need to create a mock ArgMatches with a verbose count of 0
-        let matches = clap::Command::new("fsort")
-            .arg(clap::Arg::new("verbose")
-                .short('v')
-                .long("verbose")
-                .action(clap::ArgAction::Count))
-            .get_matches_from(vec!["fsort"]);
-        
-        let verbosity = super::get_verbosity(&matches);
+        let matches = make_test_command_verbosity().get_matches_from(vec!["fsort"]);
+
+        let verbosity = get_verbosity(&matches);
         assert_eq!(verbosity, LogLevel::Info);
     }
 
     #[test]
     fn test_get_verbosity_debug() {
         // Test with one verbose flag
-        let matches = clap::Command::new("fsort")
-            .arg(clap::Arg::new("verbose")
-                .short('v')
-                .long("verbose")
-                .action(clap::ArgAction::Count))
-            .get_matches_from(vec!["fsort", "-v"]);
-        
-        let verbosity = super::get_verbosity(&matches);
+        let matches = make_test_command_verbosity().get_matches_from(vec!["fsort", "-v"]);
+
+        let verbosity = get_verbosity(&matches);
         assert_eq!(verbosity, LogLevel::Debug);
     }
 
     #[test]
     fn test_get_verbosity_trace() {
         // Test with two verbose flags
-        let matches = clap::Command::new("fsort")
-            .arg(clap::Arg::new("verbose")
-                .short('v')
-                .long("verbose")
-                .action(clap::ArgAction::Count))
-            .get_matches_from(vec!["fsort", "-v", "-v"]);
-        
-        let verbosity = super::get_verbosity(&matches);
+        let matches = make_test_command_verbosity().get_matches_from(vec!["fsort", "-v", "-v"]);
+
+        let verbosity = get_verbosity(&matches);
         assert_eq!(verbosity, LogLevel::Trace);
     }
 
     #[test]
     fn test_get_log_file_default() {
         // Test with default log file
-        let matches = clap::Command::new("fsort")
-            .arg(clap::Arg::new("log_file")
-                .short('l')
-                .long("log-file")
-                .default_value(LOG_FILE_DEFAULT))
-            .arg(clap::Arg::new("log_locally")
-                .short('L')
-                .long("log-locally")
-                .action(clap::ArgAction::SetTrue))
-            .get_matches_from(vec!["fsort"]);
-        
+        let matches = make_test_command_logging().get_matches_from(vec!["fsort"]);
+
         // Since log_locally is not set, this should return a path in the project folder
         // which we can't easily test, so we'll just check that it contains the default log file name
-        let log_file = super::get_log_file(&matches).expect("Failed to get log file");
+        let log_file = get_log_file(&matches).expect("Failed to get log file");
         assert!(log_file.contains(LOG_FILE_DEFAULT));
     }
 
@@ -293,38 +301,21 @@ mod tests {
     fn test_get_log_file_custom() {
         // Test with custom log file
         let custom_log = "custom.log";
-        let matches = clap::Command::new("fsort")
-            .arg(clap::Arg::new("log_file")
-                .short('l')
-                .long("log-file")
-                .default_value(LOG_FILE_DEFAULT))
-            .arg(clap::Arg::new("log_locally")
-                .short('L')
-                .long("log-locally")
-                .action(clap::ArgAction::SetTrue))
-            .get_matches_from(vec!["fsort", "--log-file", custom_log]);
-        
+        let matches =
+            make_test_command_logging().get_matches_from(vec!["fsort", "--log-file", custom_log]);
+
         // Since log_locally is not set, this should return a path in the project folder
-        let log_file = super::get_log_file(&matches).expect("Failed to get log file");
+        let log_file = get_log_file(&matches).expect("Failed to get log file");
         assert!(log_file.contains(custom_log));
     }
 
     #[test]
     fn test_get_log_file_local() {
         // Test with local logging
-        let matches = clap::Command::new("fsort")
-            .arg(clap::Arg::new("log_file")
-                .short('l')
-                .long("log-file")
-                .default_value(LOG_FILE_DEFAULT))
-            .arg(clap::Arg::new("log_locally")
-                .short('L')
-                .long("log-locally")
-                .action(clap::ArgAction::SetTrue))
-            .get_matches_from(vec!["fsort", "--log-locally"]);
-        
+        let matches = make_test_command_logging().get_matches_from(vec!["fsort", "--log-locally"]);
+
         // With log_locally set, this should return just the log file name
-        let log_file = super::get_log_file(&matches).expect("Failed to get log file");
+        let log_file = get_log_file(&matches).expect("Failed to get log file");
         assert_eq!(log_file, LOG_FILE_DEFAULT);
     }
 
@@ -332,19 +323,15 @@ mod tests {
     fn test_get_log_file_local_custom() {
         // Test with local logging and custom log file
         let custom_log = "custom.log";
-        let matches = clap::Command::new("fsort")
-            .arg(clap::Arg::new("log_file")
-                .short('l')
-                .long("log-file")
-                .default_value(LOG_FILE_DEFAULT))
-            .arg(clap::Arg::new("log_locally")
-                .short('L')
-                .long("log-locally")
-                .action(clap::ArgAction::SetTrue))
-            .get_matches_from(vec!["fsort", "--log-locally", "--log-file", custom_log]);
-        
+        let matches = make_test_command_logging().get_matches_from(vec![
+            "fsort",
+            "--log-locally",
+            "--log-file",
+            custom_log,
+        ]);
+
         // With log_locally set, this should return just the custom log file name
-        let log_file = super::get_log_file(&matches).expect("Failed to get log file");
+        let log_file = get_log_file(&matches).expect("Failed to get log file");
         assert_eq!(log_file, custom_log);
     }
 
