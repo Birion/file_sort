@@ -46,7 +46,7 @@ impl Processor {
         let options = CopyOptions::new().overwrite(true);
         let source = self.source();
         let target = self.target();
-        
+
         if is_copy_operation {
             copy(source, target, &options).map_err(|e| {
                 file_operation_error(std::io::Error::other(e), source.clone(), "copy")
@@ -91,5 +91,23 @@ impl Processor {
             .map_err(|e| file_operation_error(e, self.target().clone(), "create directory"))?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::processor::ProcessorBuilder;
+
+    #[test]
+    fn test_processor_builder() {
+        // Create a processor with source and target
+        let processor = ProcessorBuilder::new(Path::new("source_file.txt")).build();
+
+        // Verify that the source path is set correctly
+        assert_eq!(processor.source().to_str().unwrap(), "source_file.txt");
+
+        // Verify that the target path is empty
+        assert!(processor.target().as_os_str().is_empty());
     }
 }

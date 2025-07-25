@@ -3,7 +3,10 @@
 //! This module contains methods for handling file paths, including
 //! extracting filenames and parsing directory paths.
 
-use crate::errors::{invalid_filename_error, path_operation_error, pattern_extraction_error, pattern_matching_error, Result};
+use crate::errors::{
+    invalid_filename_error, path_operation_error, pattern_extraction_error, pattern_matching_error,
+    Result,
+};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::path::{Path, PathBuf};
@@ -108,5 +111,28 @@ impl Processor {
             .replace(directory_string, &replace_part)
             .to_string();
         Ok(PathBuf::from(dir))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::processor::ProcessorBuilder;
+
+    #[test]
+    fn test_processor_source_target() {
+        // Create a processor with source and target
+        let processor = ProcessorBuilder::new(Path::new("source_file.txt"))
+            .target(PathBuf::from("target_dir/target_file.txt"))
+            .build();
+
+        // Verify that the source path is set correctly
+        assert_eq!(processor.source(), &PathBuf::from("source_file.txt"));
+
+        // Verify that the target path is set correctly
+        assert_eq!(
+            processor.target(),
+            &PathBuf::from("target_dir/target_file.txt")
+        );
     }
 }
