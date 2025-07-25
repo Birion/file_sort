@@ -101,26 +101,7 @@ pub fn default_merger() -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::rules::{Rule, Rules};
     use serde::de::value::SeqDeserializer;
-
-    // Helper function to create a test rule
-    fn create_test_rule(pattern: &str) -> Rule {
-        let mut rule = Rule {
-            title: "Test Rule".to_string(),
-            pattern: Some(pattern.to_string()),
-            patterns: None,
-            directory: None,
-            function: None,
-            processors: None,
-            root: 0,
-            copy: false,
-            old_pattern: String::new(),
-            new_pattern: String::new(),
-        };
-        rule.make_patterns().unwrap();
-        rule
-    }
 
     #[test]
     fn test_default_merger() {
@@ -154,9 +135,8 @@ mod tests {
     #[test]
     fn test_deserialize_from_array_to_optional_pathbuf() {
         // Test with Some value
-        let path_strings = vec!["~/Documents".to_string(), "test".to_string()];
-        let deserializer: SeqDeserializer<std::vec::IntoIter<String>, serde::de::value::Error> =
-            SeqDeserializer::new(path_strings.into_iter());
+        let yaml_string = r#"["~/Documents", "test"]"#;
+        let deserializer = serde_yaml::Deserializer::from_str(yaml_string);
 
         let result = deserialize_from_array_to_optional_pathbuf(deserializer);
         assert!(result.is_ok());
@@ -169,7 +149,14 @@ mod tests {
         assert!(path_str.contains("Documents") && path_str.contains("test"));
 
         // Test with None value
-        // This is harder to test directly with the deserializer, so we'll skip it
+        let yaml_string = "null";
+        let deserializer = serde_yaml::Deserializer::from_str(yaml_string);
+        
+        let result = deserialize_from_array_to_optional_pathbuf(deserializer);
+        assert!(result.is_ok());
+        
+        let optional_path_buf = result.unwrap();
+        assert!(optional_path_buf.is_none());
     }
 
     #[test]
@@ -206,16 +193,14 @@ mod tests {
 
     #[test]
     fn test_parse_rules_single_rule() {
-        // Create a test rule
-        let rule = create_test_rule("test");
-
-        // Create a test Rules::SingleRule
-        let rules = Rules::SingleRule(vec![rule]);
-        // Serialise the rules to a YAML string
-        let yaml_string = serde_yaml::to_string(&rules).unwrap();
+        // Create a YAML string directly that represents a single rule
+        let yaml_string = r#"
+- title: Test Rule
+  pattern: test
+"#;
 
         // Create a deserializer for the Rules
-        let deserializer = serde_yaml::Deserializer::from_str(&yaml_string);
+        let deserializer = serde_yaml::Deserializer::from_str(yaml_string);
 
         // Test parsing the rules
         let result = parse_rules(deserializer);
@@ -233,18 +218,16 @@ mod tests {
 
     #[test]
     fn test_parse_rules_root_rules() {
-        // Create test rules for different roots
-        let rule1 = create_test_rule("test1");
-        let rule2 = create_test_rule("test2");
-
-        // Create a test Rules::RootRules
-        let rules = Rules::RootRules(vec![vec![rule1], vec![rule2]]);
-
-        // Serialise the rules to a YAML string
-        let yaml_string = serde_yaml::to_string(&rules).unwrap();
+        // Create a YAML string directly that represents multiple rule lists
+        let yaml_string = r#"
+- - title: Test Rule
+    pattern: test1
+- - title: Test Rule
+    pattern: test2
+"#;
 
         // Create a deserializer for the Rules
-        let deserializer = serde_yaml::Deserializer::from_str(&yaml_string);
+        let deserializer = serde_yaml::Deserializer::from_str(yaml_string);
 
         // Test parsing the rules
         let result = parse_rules(deserializer);

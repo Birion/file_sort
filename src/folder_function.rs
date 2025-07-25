@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use glob::glob;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::constants::WILDCARD;
 use crate::errors::{
@@ -38,7 +38,7 @@ pub type ArgumentList = Vec<String>;
 ///
 /// This would select the last (most recent) directory that matches the pattern "comics/batman/*".
 ///
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
 #[serde(tag = "name")]
 pub enum FolderFunction {

@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::errors::Result;
 use crate::folder_function::FolderFunction;
@@ -10,7 +10,7 @@ use crate::utils::{clean_pattern, extract_pattern};
 ///
 /// Defines how file paths should be processed, including date formatting
 /// and pattern replacement.
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct ConfigProcessor {
     /// String to split the filename with
     pub splitter: Option<String>,
@@ -39,7 +39,7 @@ pub type RulesList = Vec<Rule>;
 ///
 /// This enum allows for both single rule lists and multiple rule lists
 /// organised by root directories.
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 #[serde(untagged)]
 pub enum Rules {
     /// A single list of rules
@@ -51,7 +51,7 @@ pub enum Rules {
 /// Represents a rule for file sorting
 ///
 /// A rule defines how files should be matched and where they should be moved or copied.
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Rule {
     /// The title of the rule
     pub title: String,
