@@ -1,7 +1,9 @@
 use anyhow::Result;
-use file_sort::cli::get_log_file;
-use file_sort::prelude::*;
+use file_sort::cli::{get_configuration_file_option, get_log_file, get_verbosity};
+use file_sort::logging::init_logger;
+use file_sort::workflow::{ProcessingOptions, process_files};
 use human_panic::setup_panic;
+use std::path::PathBuf;
 
 fn main() -> Result<()> {
     setup_panic!();
@@ -18,6 +20,17 @@ fn main() -> Result<()> {
     };
     init_logger(verbosity, &log_file)?;
 
+    // Get the configuration file path and dry run flag
+    let config_path = PathBuf::from(matches.get_one::<String>("config").unwrap());
+    let dry_run = matches.get_flag("dry");
+
     // Process files based on the configuration
-    perform_processing_based_on_configuration(matches)
+    let options = ProcessingOptions {
+        config_path,
+        dry_run,
+    };
+
+    process_files(options)?;
+
+    Ok(())
 }
