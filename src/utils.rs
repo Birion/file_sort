@@ -2,11 +2,7 @@ use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 
 use crate::constants::{APPLICATION, ORGANIZATION, QUALIFIER};
-use crate::errors::{
-    generic_error, path_operation_error, pattern_extraction_error, pattern_matching_error, Result,
-};
-use crate::processor::Processor;
-use crate::rules::Rule;
+use crate::errors::{generic_error, pattern_extraction_error, pattern_matching_error, Result};
 use chrono::TimeZone;
 use chrono::Utc;
 use directories::ProjectDirs;
@@ -107,28 +103,6 @@ pub fn process_pattern(
     };
 
     Ok(())
-}
-
-/// Generate the target path for a file based on the rule and processor
-pub(crate) fn generate_target(
-    processor: &Processor,
-    rule: &Rule,
-    root: &Path,
-    run_execution: bool,
-) -> Result<(PathBuf, PathBuf)> {
-    match &rule.function {
-        None => processor.make_destination(&rule.new_pattern, Some(root), rule, run_execution),
-        Some(func) => {
-            let (_, temporary_root) =
-                processor.make_destination(&rule.new_pattern, None, rule, run_execution)?;
-            let parent = temporary_root.parent().ok_or_else(|| {
-                path_operation_error(temporary_root.clone(), "get parent directory")
-            })?;
-
-            let directory = func.get_dir(parent)?;
-            processor.make_destination(&rule.new_pattern, Some(&directory), rule, run_execution)
-        }
-    }
 }
 
 pub(crate) fn find_project_folder() -> Result<ProjectDirs> {

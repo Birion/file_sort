@@ -1,8 +1,8 @@
 use crate::constants::LOG_FILE_DEFAULT;
 use anyhow::Result;
 use chrono::SecondsFormat;
-use fern::colors::{Color, ColoredLevelConfig};
 use fern::Dispatch;
+use fern::colors::{Color, ColoredLevelConfig};
 use log::LevelFilter;
 use std::str::FromStr;
 

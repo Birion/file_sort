@@ -1,11 +1,11 @@
 use atty::Stream;
-use clap::{command, crate_authors, crate_description, crate_name, crate_version, Arg, ArgMatches};
+use clap::{Arg, ArgMatches, command, crate_authors, crate_description, crate_name, crate_version};
 
 use crate::constants::{
     CONFIG_HELP, DEFAULT_CONFIG_PATH, DRY_RUN_HELP, LOCAL_LOGGING_HELP, LOG_FILE_DEFAULT,
     LOG_FILE_HELP, VERBOSE_HELP,
 };
-use crate::errors::{generic_error, Result};
+use crate::errors::{Result, generic_error};
 use crate::logging::LogLevel;
 use crate::utils::find_project_folder;
 
