@@ -45,11 +45,11 @@ pub fn process_files(options: ProcessingOptions) -> Result<WorkflowContext> {
     let config_file_path = read_or_create(options.config_path)?;
     let mut config = load_config(config_file_path)?;
 
-    // Create the workflow context
-    let mut context = WorkflowContext::new(config.clone(), options.dry_run);
-
     // Prepare the rules
     prepare_rules(&mut config.rules)?;
+
+    // Create the workflow context
+    let mut context = WorkflowContext::new(config.clone(), options.dry_run);
 
     // Step 2: Get the list of files from the download directory
     let files = scan_directory(&config.download)?;

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use file_sort::cli::{get_configuration_file_option, get_log_file, get_verbosity};
 use file_sort::logging::init_logger;
-use file_sort::workflow::{ProcessingOptions, process_files};
+use file_sort::workflow::{process_files, ProcessingOptions};
 use human_panic::setup_panic;
 use std::path::PathBuf;
 

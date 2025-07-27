@@ -4,7 +4,7 @@
 
 use std::path::PathBuf;
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use serde::Deserialize;
 
 use crate::path_gen::FolderFunction;
@@ -259,63 +259,9 @@ impl Rule {
     }
 }
 
-/// Deserialises a value from an array to an optional PathBuf
-///
-/// This function is used to deserialise a directory field in a Rule struct.
-/// It can handle both string values and arrays of strings.
-fn deserialize_from_array_to_optional_pathbuf<'de, D>(
-    deserializer: D,
-) -> std::result::Result<Option<PathBuf>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    struct OptionalPathBufVisitor;
-
-    impl<'de> serde::de::Visitor<'de> for OptionalPathBufVisitor {
-        type Value = Option<PathBuf>;
-
-        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-            formatter.write_str("string or array of strings")
-        }
-
-        fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
-        where
-            E: serde::de::Error,
-        {
-            Ok(Some(PathBuf::from(value)))
-        }
-
-        fn visit_none<E>(self) -> std::result::Result<Self::Value, E>
-        where
-            E: serde::de::Error,
-        {
-            Ok(None)
-        }
-
-        fn visit_some<D>(self, deserializer: D) -> std::result::Result<Self::Value, D::Error>
-        where
-            D: serde::Deserializer<'de>,
-        {
-            deserializer.deserialize_any(self)
-        }
-
-        fn visit_seq<A>(self, mut seq: A) -> std::result::Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>,
-        {
-            let mut path = PathBuf::new();
-            while let Some(segment) = seq.next_element::<String>()? {
-                path.push(segment);
-            }
-            Ok(Some(path))
-        }
-    }
-
-    deserializer.deserialize_any(OptionalPathBufVisitor)
-}
-
 // Note: The following deserialization functions are referenced in the struct definitions
 // but are defined in the loader.rs file.
 use super::loader::{
-    deserialize_from_array_to_pathbuf, deserialize_from_arrays_to_pathbuf_vec, parse_rules,
+    deserialize_from_array_to_optional_pathbuf, deserialize_from_array_to_pathbuf,
+    deserialize_from_arrays_to_pathbuf_vec, parse_rules,
 };

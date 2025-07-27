@@ -5,7 +5,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use log::{debug, error, info};
 use serde::Deserialize;
 use serde_yaml::from_str;
@@ -168,9 +168,21 @@ pub fn prepare_rules(rules: &mut RulesList) -> Result<()> {
     Ok(())
 }
 
-/// Deserializes a value from arrays to a vector of PathBuf
+fn add_segment_to_path(segment: &str, path: &mut PathBuf) {
+    if segment.starts_with("~") {
+        path.push(process_path(segment));
+    } else if segment == "." {
+        path.push(std::env::current_dir().unwrap());
+    } else if segment == ".." {
+        path.pop();
+    } else {
+        path.push(segment);
+    }
+}
+
+/// Deserialises a value from arrays to a vector of PathBuf
 ///
-/// This function is used to deserialize the root directories field in a Config struct.
+/// This function is used to deserialise the root directories field in a Config struct.
 /// It can handle both string values and arrays of strings.
 pub fn deserialize_from_arrays_to_pathbuf_vec<'de, D>(
     deserializer: D,
@@ -195,7 +207,7 @@ where
             while let Some(inner_seq) = seq.next_element::<Vec<String>>()? {
                 let mut path = PathBuf::new();
                 for segment in inner_seq {
-                    path.push(segment);
+                    add_segment_to_path(&segment, &mut path);
                 }
                 paths.push(path);
             }
@@ -206,9 +218,64 @@ where
     deserializer.deserialize_seq(PathBufVecVisitor)
 }
 
-/// Deserializes a value from an array to a PathBuf
+/// Deserialises a value from an array to an optional PathBuf
 ///
-/// This function is used to deserialize the download directory field in a Config struct.
+/// This function is used to deserialise a directory field in a Rule struct.
+/// It can handle both string values and arrays of strings.
+pub fn deserialize_from_array_to_optional_pathbuf<'de, D>(
+    deserializer: D,
+) -> std::result::Result<Option<PathBuf>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct OptionalPathBufVisitor;
+
+    impl<'de> serde::de::Visitor<'de> for OptionalPathBufVisitor {
+        type Value = Option<PathBuf>;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("string or array of strings")
+        }
+
+        fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(Some(PathBuf::from(value)))
+        }
+
+        fn visit_none<E>(self) -> std::result::Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(None)
+        }
+
+        fn visit_some<D>(self, deserializer: D) -> std::result::Result<Self::Value, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            deserializer.deserialize_any(self)
+        }
+
+        fn visit_seq<A>(self, mut seq: A) -> std::result::Result<Self::Value, A::Error>
+        where
+            A: serde::de::SeqAccess<'de>,
+        {
+            let mut path = PathBuf::new();
+            while let Some(segment) = seq.next_element::<String>()? {
+                add_segment_to_path(&segment, &mut path);
+            }
+            Ok(Some(path))
+        }
+    }
+
+    deserializer.deserialize_any(OptionalPathBufVisitor)
+}
+
+/// Deserialises a value from an array to a PathBuf
+///
+/// This function is used to deserialise the download directory field in a Config struct.
 /// It can handle both string values and arrays of strings.
 pub fn deserialize_from_array_to_pathbuf<'de, D>(
     deserializer: D,
@@ -231,7 +298,7 @@ where
         {
             let mut path = PathBuf::new();
             while let Some(segment) = seq.next_element::<String>()? {
-                path.push(segment);
+                add_segment_to_path(&segment, &mut path);
             }
             Ok(path)
         }
@@ -242,21 +309,89 @@ where
 
 /// Parses rules from a YAML value
 ///
-/// This function is used to deserialize the rules field in a Config struct.
+/// This function is used to deserialise the rules field in a Config struct.
 /// It can handle both single rule lists and multiple rule lists.
 pub fn parse_rules<'de, D>(deserializer: D) -> std::result::Result<RulesList, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let rules = Rules::deserialize(deserializer)?;
+    let mut result = Vec::new();
     match rules {
-        Rules::SingleRule(rules) => Ok(rules),
-        Rules::RootRules(rules) => {
-            if rules.is_empty() {
-                Ok(Vec::new())
-            } else {
-                Ok(rules[0].clone())
+        Rules::SingleRule(mut rules) => process_rules(&mut rules, &mut result).map_err(|e| {
+            error!("Failed to process rules: {e}");
+            serde::de::Error::custom(e)
+        })?,
+        Rules::RootRules(rules) => process_and_append_rules(rules, &mut result).map_err(|e| {
+            error!("Failed to process rules: {e}");
+            serde::de::Error::custom(e)
+        })?,
+    };
+    result.dedup();
+    Ok(result)
+}
+
+use crate::config::Rule;
+use shellexpand::tilde;
+
+pub fn expand_path(path: &str) -> String {
+    tilde(path).to_string()
+}
+
+pub fn handle_colon_end(mut path: String) -> String {
+    if path.ends_with(':') {
+        path += "\\";
+    };
+    path
+}
+
+pub fn process_path<S: AsRef<str>>(path: S) -> String {
+    let p = expand_path(path.as_ref());
+    handle_colon_end(p)
+}
+
+pub fn process_patterns(rule: &mut Rule, patterns: &[String]) -> RulesList {
+    patterns
+        .iter()
+        .map(|pattern| extract_rule_with_pattern(rule, pattern))
+        .collect()
+}
+
+pub fn map_patterns_to_rules(rule: &mut Rule) -> Result<RulesList> {
+    match rule.patterns {
+        None => Ok(vec![rule.clone()]),
+        Some(ref patterns) => Ok(process_patterns(&mut rule.clone(), patterns)),
+    }
+}
+
+pub fn extract_rule_with_pattern(rule: &mut Rule, pattern: &str) -> Rule {
+    rule.pattern = Some(pattern.to_string());
+    let mut derived_rule = rule.clone();
+    derived_rule.patterns = None;
+    derived_rule
+}
+
+pub fn process_and_append_rule(rules: &mut RulesList, new_rules: &mut Vec<Rule>) -> Result<()> {
+    for rule in rules {
+        let processed_rules = map_patterns_to_rules(rule)?;
+        new_rules.extend(processed_rules);
+    }
+    Ok(())
+}
+
+pub fn process_rules(mappings: &mut RulesList, result_mappings: &mut Vec<Rule>) -> Result<()> {
+    process_and_append_rule(mappings, result_mappings)
+}
+
+pub fn process_and_append_rules(roots: Vec<RulesList>, new_rules: &mut Vec<Rule>) -> Result<()> {
+    let roots_with_indices = roots.into_iter().enumerate();
+    for (idx, root) in roots_with_indices {
+        for mut map in root {
+            if map.root == 0 {
+                map.root = idx;
             }
+            process_and_append_rule(&mut vec![map], new_rules)?;
         }
     }
+    Ok(())
 }
