@@ -5,9 +5,11 @@
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use log::debug;
 
+use crate::discovery::content_analyser::analyse_file_content;
+use crate::discovery::ContentAnalysis;
 use crate::utils::is_hidden_file;
 
 /// Information about a file found during scanning
@@ -17,6 +19,8 @@ pub struct FileInfo {
     pub path: PathBuf,
     /// The filename of the file
     pub filename: String,
+    /// Content analysis results (lazy-loaded)
+    pub content_analysis: Option<ContentAnalysis>,
 }
 
 impl FileInfo {
@@ -38,7 +42,30 @@ impl FileInfo {
             .ok_or_else(|| anyhow!("Invalid filename: {}", path.display()))?
             .to_string();
 
-        Ok(FileInfo { path, filename })
+        Ok(FileInfo {
+            path,
+            filename,
+            content_analysis: None, // Lazy-loaded when needed
+        })
+    }
+
+    /// Ensures content analysis is loaded for the file
+    ///
+    /// This method lazily loads content analysis information if it hasn't been loaded yet.
+    /// It's used when content-based rules need to be evaluated.
+    ///
+    /// # Returns
+    /// * `Result<&ContentAnalysis>` - Reference to the content analysis or an error
+    ///
+    /// # Errors
+    /// Returns an error if content analysis fails
+    pub fn ensure_content_analysed(&mut self) -> Result<&ContentAnalysis> {
+        if self.content_analysis.is_none() {
+            debug!("Analysing content for file: {}", self.filename);
+            self.content_analysis = Some(analyse_file_content(&self.path)?);
+        }
+
+        Ok(self.content_analysis.as_ref().unwrap())
     }
 }
 

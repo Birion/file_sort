@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use anyhow::{anyhow, Result};
 use serde::Deserialize;
 
+use crate::discovery::ContentCondition;
 use crate::path_gen::FolderFunction;
 use crate::utils::{clean_pattern, extract_pattern};
 
@@ -190,6 +191,11 @@ fn default_merger() -> Option<String> {
     Some(" ".to_string())
 }
 
+/// Default value for match_all_conditions in Rule
+fn default_match_all() -> bool {
+    true
+}
+
 /// A list of rules for file sorting.
 ///
 /// This type is used throughout the application to represent collections of sorting rules.
@@ -211,6 +217,7 @@ pub enum Rules {
 /// Represents a rule for file sorting
 ///
 /// A rule defines how files should be matched and where they should be moved or copied.
+/// Rules can match files based on filename patterns or content-based conditions.
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Rule {
     /// The title of the rule
@@ -219,6 +226,11 @@ pub struct Rule {
     pub pattern: Option<String>,
     /// Multiple patterns to match files against
     pub patterns: Option<Vec<String>>,
+    /// Content-based conditions to match files against
+    pub content_conditions: Option<Vec<ContentCondition>>,
+    /// Whether all content conditions must match (AND logic) or any can match (OR logic)
+    #[serde(default = "default_match_all")]
+    pub match_all_conditions: bool,
     /// The directory to move or copy files to
     #[serde(default)]
     #[serde(deserialize_with = "deserialize_from_array_to_optional_pathbuf")]

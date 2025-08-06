@@ -431,6 +431,8 @@ mod tests {
             title: "Test Format Conversion".to_string(),
             pattern: Some("<pattern>".to_string()),
             patterns: None,
+            content_conditions: None,
+            match_all_conditions: true,
             directory: None,
             function: None,
             processors: Some(crate::config::ConfigProcessor {
