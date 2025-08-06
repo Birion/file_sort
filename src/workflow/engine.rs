@@ -84,7 +84,7 @@ pub fn process_files(options: ProcessingOptions) -> Result<WorkflowContext> {
             ) {
                 Ok(result) => result,
                 Err(e) => {
-                    error!("Failed to apply transformative function: {}", e);
+                    error!("Failed to apply transformative function: {e}");
                     context.increment_errors();
                     continue;
                 }
@@ -94,7 +94,7 @@ pub fn process_files(options: ProcessingOptions) -> Result<WorkflowContext> {
             let path_result = match generate_destination_path(&transform_result, !options.dry_run) {
                 Ok(result) => result,
                 Err(e) => {
-                    error!("Failed to generate destination path: {}", e);
+                    error!("Failed to generate destination path: {e}");
                     context.increment_errors();
                     continue;
                 }
@@ -111,7 +111,7 @@ pub fn process_files(options: ProcessingOptions) -> Result<WorkflowContext> {
                     result
                 }
                 Err(e) => {
-                    error!("Failed to convert file format: {}", e);
+                    error!("Failed to convert file format: {e}");
                     context.increment_errors();
                     continue;
                 }
@@ -121,7 +121,7 @@ pub fn process_files(options: ProcessingOptions) -> Result<WorkflowContext> {
             let action_result = match perform_file_action(&conversion_result, !options.dry_run) {
                 Ok(result) => result,
                 Err(e) => {
-                    error!("Failed to perform file action: {}", e);
+                    error!("Failed to perform file action: {e}");
                     context.increment_errors();
                     continue;
                 }

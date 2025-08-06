@@ -1,5 +1,7 @@
 use anyhow::Result;
-use file_sort::cli::{get_configuration_file_option, get_log_file, get_verbosity};
+use file_sort::cli::{
+    check_for_stdout_stream, get_configuration_file_option, get_log_file, get_verbosity,
+};
 use file_sort::logging::init_logger;
 use file_sort::workflow::{process_files, ProcessingOptions};
 use human_panic::setup_panic;
@@ -31,6 +33,8 @@ fn main() -> Result<()> {
     };
 
     process_files(options)?;
+
+    check_for_stdout_stream();
 
     Ok(())
 }
