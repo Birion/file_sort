@@ -18,8 +18,8 @@ logically ordered and covers both architectural and code-level improvements.
 ## Feature Enhancements
 
 1. [x] Add support for converting file formats (e.g., image resizing, text encoding conversion)
-2. [ ] Add support for multiple configuration files with inheritance
-3. [ ] Implement a dry-run mode with detailed output of planned operations
+2. [x] Add support for multiple configuration files with inheritance
+3. [x] Implement a dry-run mode with detailed output of planned operations
 4. [ ] Add support for file-content-based rules using file metadata or content analysis
 5. [ ] Implement parallel processing for file operations to improve performance
 6. [ ] Add support for conditional rules based on file properties (size, date, content type)

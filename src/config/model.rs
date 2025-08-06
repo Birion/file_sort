@@ -27,6 +27,9 @@ pub struct Config {
     /// Files found in the download directory
     #[serde(skip_deserializing)]
     pub files: Vec<PathBuf>,
+    /// Path to parent configuration file for inheritance
+    #[serde(default)]
+    pub parent: Option<String>,
 }
 
 impl Config {

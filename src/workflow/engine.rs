@@ -12,7 +12,7 @@ use crate::discovery::{match_file_against_rules, scan_directory};
 use crate::file_ops::{convert_file_format, perform_file_action};
 use crate::path_gen::{apply_transformative_function, generate_destination_path};
 
-use super::context::WorkflowContext;
+use super::context::{OperationType, PlannedOperation, WorkflowContext};
 
 /// Options for processing files
 #[derive(Debug, Clone)]
@@ -107,6 +107,31 @@ pub fn process_files(options: ProcessingOptions) -> Result<WorkflowContext> {
                         || result.target_path != path_result.target_path
                     {
                         context.increment_files_converted();
+
+                        // Track planned conversion operation in dry-run mode
+                        if options.dry_run {
+                            // Determine source and target formats from file extensions
+                            let source_ext = result
+                                .source_path
+                                .extension()
+                                .and_then(|e| e.to_str())
+                                .unwrap_or("unknown");
+                            let target_ext = result
+                                .target_path
+                                .extension()
+                                .and_then(|e| e.to_str())
+                                .unwrap_or("unknown");
+
+                            context.add_planned_operation(PlannedOperation {
+                                source: result.source_path.clone(),
+                                destination: result.target_path.clone(),
+                                operation_type: OperationType::Convert(
+                                    source_ext.to_string(),
+                                    target_ext.to_string(),
+                                ),
+                                rule_title: match_result.rule.title.clone(),
+                            });
+                        }
                     }
                     result
                 }
@@ -131,8 +156,28 @@ pub fn process_files(options: ProcessingOptions) -> Result<WorkflowContext> {
             if action_result.success {
                 if match_result.rule.copy {
                     context.increment_files_copied();
+
+                    // Track planned copy operation in dry-run mode
+                    if options.dry_run {
+                        context.add_planned_operation(PlannedOperation {
+                            source: action_result.source_path.clone(),
+                            destination: action_result.target_path.clone(),
+                            operation_type: OperationType::Copy,
+                            rule_title: match_result.rule.title.clone(),
+                        });
+                    }
                 } else {
                     context.increment_files_moved();
+
+                    // Track planned move operation in dry-run mode
+                    if options.dry_run {
+                        context.add_planned_operation(PlannedOperation {
+                            source: action_result.source_path.clone(),
+                            destination: action_result.target_path.clone(),
+                            operation_type: OperationType::Move,
+                            rule_title: match_result.rule.title.clone(),
+                        });
+                    }
                 }
             }
         }
@@ -142,6 +187,71 @@ pub fn process_files(options: ProcessingOptions) -> Result<WorkflowContext> {
         "Finished processing {} files",
         context.stats.files_processed
     );
+
+    // Display detailed output for planned operations in dry-run mode
+    if options.dry_run && !context.planned_operations.is_empty() {
+        println!("\nDetailed plan of operations:");
+        println!("===========================");
+
+        // Group operations by type for better readability
+        let mut move_operations = Vec::new();
+        let mut copy_operations = Vec::new();
+        let mut convert_operations = Vec::new();
+
+        for op in &context.planned_operations {
+            match op.operation_type {
+                OperationType::Move => move_operations.push(op),
+                OperationType::Copy => copy_operations.push(op),
+                OperationType::Convert(_, _) => convert_operations.push(op),
+            }
+        }
+
+        // Display move operations
+        if !move_operations.is_empty() {
+            println!("\nFiles to be moved:");
+            println!("-----------------");
+            for op in move_operations.iter() {
+                println!("Rule: {}", op.rule_title);
+                println!("  From: {}", op.source.display());
+                println!("  To:   {}", op.destination.display());
+            }
+        }
+
+        // Display copy operations
+        if !copy_operations.is_empty() {
+            println!("\nFiles to be copied:");
+            println!("------------------");
+            for op in copy_operations.iter() {
+                println!("Rule: {}", op.rule_title);
+                println!("  From: {}", op.source.display());
+                println!("  To:   {}", op.destination.display());
+            }
+        }
+
+        // Display convert operations
+        if !convert_operations.is_empty() {
+            println!("\nFiles to be converted:");
+            println!("--------------------");
+            for op in convert_operations.iter() {
+                if let OperationType::Convert(from, to) = &op.operation_type {
+                    println!("Rule: {}", op.rule_title);
+                    println!("  From: {} ({})", op.source.display(), from);
+                    println!("  To:   {} ({})", op.destination.display(), to);
+                }
+            }
+        }
+
+        println!("\nSummary:");
+        println!("--------");
+        println!("  Files to be moved:    {}", move_operations.len());
+        println!("  Files to be copied:   {}", copy_operations.len());
+        println!("  Files to be converted: {}", convert_operations.len());
+        println!(
+            "  Total operations:     {}",
+            context.planned_operations.len()
+        );
+        println!("\nRun without --dry flag to execute these operations.");
+    }
 
     Ok(context)
 }

@@ -1,0 +1,17 @@
+root:
+  - - "t:"
+    - "Webcomics"
+  - - "t:"
+    - "Pics"
+    - "+artists"
+download:
+  - "~"
+  - "Downloads"
+rules:
+  - # Webcomics
+    - title: "Darths & Droids"
+      pattern: "^darths[0-9][0-9][0-9][0-9].jpg$"
+    - title: "Gunnerkrig Court"
+      pattern: "^0000[0-3][0-9][0-9][0-9].jpg$"
+    - title: "Girl Genius"
+      pattern: "^ggmain20[1-4][0-9](0[1-9]|1[0-2])([0-2][0-9]|3[0-1])[a-d]?.jpg$"

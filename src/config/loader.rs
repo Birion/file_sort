@@ -14,6 +14,38 @@ use crate::utils::find_project_folder;
 
 use super::model::{Config, Rules, RulesList};
 
+/// Merges a parent configuration with a child configuration
+///
+/// The child configuration takes precedence over the parent configuration.
+/// Rules from both configurations are combined.
+///
+/// # Arguments
+/// * `parent` - The parent configuration
+/// * `child` - The child configuration
+///
+/// # Returns
+/// * `Config` - The merged configuration
+fn merge_configs(parent: Config, mut child: Config) -> Config {
+    // If child has empty root, use parent's root
+    if child.root.is_empty() {
+        child.root = parent.root;
+    }
+    
+    // If child has no rules, use parent's rules
+    if child.rules.is_empty() {
+        child.rules = parent.rules;
+    } else {
+        // Append parent rules to child rules
+        // Child rules take precedence as they come first in the list
+        let mut merged_rules = child.rules;
+        merged_rules.extend(parent.rules);
+        child.rules = merged_rules;
+    }
+    
+    // Return the merged configuration
+    child
+}
+
 /// Loads a configuration from a file
 ///
 /// # Arguments
@@ -41,7 +73,7 @@ pub fn load_config(file: PathBuf) -> Result<Config> {
         )
     })?;
 
-    let config: Config = from_str(&content_str).map_err(|e| {
+    let mut config: Config = from_str(&content_str).map_err(|e| {
         anyhow!(
             "Failed to parse configuration file {}: {}\nPlease check the YAML syntax.",
             file.display(),
@@ -49,7 +81,39 @@ pub fn load_config(file: PathBuf) -> Result<Config> {
         )
     })?;
 
-    // Validate the configuration
+    // Handle parent configuration if specified
+    if let Some(parent_path) = &config.parent {
+        debug!("Loading parent configuration from {}", parent_path);
+        
+        // Resolve parent path relative to the current config file's directory
+        let parent_file = if parent_path.starts_with('/') || parent_path.contains(':') {
+            // Absolute path
+            PathBuf::from(parent_path)
+        } else {
+            // Relative path - resolve against the directory of the current config file
+            let mut parent_file = file.clone();
+            parent_file.pop(); // Remove filename to get directory
+            parent_file.push(parent_path);
+            parent_file
+        };
+
+        // Check if parent file exists
+        if !parent_file.exists() {
+            return Err(anyhow!(
+                "Parent configuration file {} specified in {} does not exist",
+                parent_file.display(),
+                file.display()
+            ));
+        }
+
+        // Load parent configuration
+        let parent_config = load_config(parent_file)?;
+        
+        // Merge parent configuration with current configuration
+        config = merge_configs(parent_config, config);
+    }
+
+    // Validate the merged configuration
     config.validate(true)?;
 
     Ok(config)
@@ -84,13 +148,45 @@ pub fn load_config_for_testing(file: PathBuf) -> Result<Config> {
         )
     })?;
 
-    let config: Config = from_str(&content_str).map_err(|e| {
+    let mut config: Config = from_str(&content_str).map_err(|e| {
         anyhow!(
             "Failed to parse configuration file {}: {}\nPlease check the YAML syntax.",
             file.display(),
             e
         )
     })?;
+
+    // Handle parent configuration if specified
+    if let Some(parent_path) = &config.parent {
+        debug!("Loading parent configuration from {}", parent_path);
+        
+        // Resolve parent path relative to the current config file's directory
+        let parent_file = if parent_path.starts_with('/') || parent_path.contains(':') {
+            // Absolute path
+            PathBuf::from(parent_path)
+        } else {
+            // Relative path - resolve against the directory of the current config file
+            let mut parent_file = file.clone();
+            parent_file.pop(); // Remove filename to get directory
+            parent_file.push(parent_path);
+            parent_file
+        };
+
+        // Check if parent file exists
+        if !parent_file.exists() {
+            return Err(anyhow!(
+                "Parent configuration file {} specified in {} does not exist",
+                parent_file.display(),
+                file.display()
+            ));
+        }
+
+        // Load parent configuration
+        let parent_config = load_config_for_testing(parent_file)?;
+        
+        // Merge parent configuration with current configuration
+        config = merge_configs(parent_config, config);
+    }
 
     // Validate the configuration without checking path existence
     config.validate(false)?;
