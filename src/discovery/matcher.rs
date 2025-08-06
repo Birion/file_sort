@@ -2,12 +2,12 @@
 //!
 //! This module contains functions for matching files against rules.
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use log::{debug, info};
 use regex::Regex;
 
 use crate::config::Rule;
-use crate::discovery::content_analyser::{evaluate_condition, ContentCondition};
+use crate::discovery::content_analyser::evaluate_condition;
 use crate::errors::pattern_matching_error;
 use crate::logging::format_message;
 
