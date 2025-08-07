@@ -165,3 +165,54 @@ fn test_rule_with_content_conditions() {
     assert!(rule.content_conditions.is_some());
     assert_eq!(rule.content_conditions.unwrap().len(), 2);
 }
+
+#[test]
+fn test_date_condition_evaluation() {
+    // Create a temporary directory
+    let temp_dir = tempdir().unwrap();
+    let file_path = temp_dir.path().join("test.txt");
+
+    // Create a test file
+    let mut file = File::create(&file_path).unwrap();
+    writeln!(file, "This is a test file for date condition testing").unwrap();
+
+    // Analyse file content
+    let analysis = analyse_file_content(&file_path).unwrap();
+    
+    // Get the current time in ISO 8601 format
+    let now = chrono::Utc::now();
+    let one_hour_ago = now - chrono::Duration::hours(1);
+    let one_hour_later = now + chrono::Duration::hours(1);
+    
+    // Test modified date condition (file should be newer than one hour ago)
+    let modified_condition = ContentCondition {
+        property: ContentProperty::Modified,
+        operator: ConditionOperator::GreaterThan,
+        value: one_hour_ago.to_rfc3339(),
+    };
+    assert!(evaluate_condition(&modified_condition, &analysis).unwrap());
+    
+    // Test modified date condition (file should be older than one hour in the future)
+    let modified_condition_future = ContentCondition {
+        property: ContentProperty::Modified,
+        operator: ConditionOperator::LessThan,
+        value: one_hour_later.to_rfc3339(),
+    };
+    assert!(evaluate_condition(&modified_condition_future, &analysis).unwrap());
+    
+    // Test created date condition (file should be newer than one hour ago)
+    let created_condition = ContentCondition {
+        property: ContentProperty::Created,
+        operator: ConditionOperator::GreaterThan,
+        value: one_hour_ago.to_rfc3339(),
+    };
+    assert!(evaluate_condition(&created_condition, &analysis).unwrap());
+    
+    // Test created date condition (file should be older than one hour in the future)
+    let created_condition_future = ContentCondition {
+        property: ContentProperty::Created,
+        operator: ConditionOperator::LessThan,
+        value: one_hour_later.to_rfc3339(),
+    };
+    assert!(evaluate_condition(&created_condition_future, &analysis).unwrap());
+}

@@ -43,5 +43,11 @@ pub const LOG_FILE_DEFAULT: &str = "fsort.log";
 pub const LOCAL_LOGGING_HELP: &str =
     "Log messages in the current directory instead of a centralised location";
 
+/// Help text for the wizard command
+pub const WIZARD_HELP: &str = "Create a new configuration file with a wizard";
+
+/// Help text for the output option in wizard command
+pub const WIZARD_OUTPUT_HELP: &str = "Path where the new configuration file will be saved";
+
 /// Default path for the configuration file
-pub const DEFAULT_CONFIG_PATH: &str = "config.yaml";
+pub const DEFAULT_CONFIG_PATH: &str = "config.bck.yaml";

@@ -85,5 +85,6 @@ Cargo.lock
 **/*.rs.bk
 
 /Webcomics
+/config.bck.yaml
 /config.yaml
 /fsort.log

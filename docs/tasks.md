@@ -22,7 +22,7 @@ logically ordered and covers both architectural and code-level improvements.
 3. [x] Implement a dry-run mode with detailed output of planned operations
 4. [x] Add support for file-content-based rules using file metadata or content analysis
 5. [x] Implement parallel processing for file operations to improve performance
-6. [ ] Add support for conditional rules based on file properties (size, date, content type)
+6. [x] Add support for conditional rules based on file properties (size, date, content type)
 7. [ ] Implement a configuration wizard for creating new config files
 8. [ ] Add support for environment variable expansion in configuration paths
 9. [ ] Implement a plugin system for custom processors

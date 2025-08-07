@@ -8,8 +8,9 @@ use std::path::Path;
 use std::time::SystemTime;
 
 use anyhow::{anyhow, Result};
+use chrono;
 use log::debug;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Represents file metadata information
 #[derive(Debug, Clone)]
@@ -38,7 +39,7 @@ pub struct ContentAnalysis {
 }
 
 /// Condition operator for content-based rules
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub enum ConditionOperator {
     /// Equal to
     #[serde(alias = "eq")]
@@ -73,7 +74,7 @@ pub enum ConditionOperator {
 }
 
 /// Property to check in content-based rules
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub enum ContentProperty {
     /// File size in bytes
     #[serde(alias = "size")]
@@ -99,7 +100,7 @@ pub enum ContentProperty {
 }
 
 /// Represents a content-based condition for file matching
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct ContentCondition {
     /// Property to check
     pub property: ContentProperty,
@@ -358,11 +359,61 @@ pub fn evaluate_condition(
                 Ok(false)
             }
         }
-        // For Modified and Created, we would need to parse dates, which is more complex
-        // This is a simplified implementation
-        _ => Err(anyhow!(
-            "Property not implemented: {:?}",
-            condition.property
-        )),
+        ContentProperty::Modified => {
+            let modified = analysis.metadata.modified;
+
+            // Parse the condition value as a date string (ISO 8601 format)
+            let value_date =
+                chrono::DateTime::parse_from_rfc3339(&condition.value).map_err(|_| {
+                    anyhow!(
+                        "Invalid date format: {}. Use ISO 8601 format (e.g., 2025-08-07T07:23:00Z)",
+                        condition.value
+                    )
+                })?;
+
+            // Convert SystemTime to chrono::DateTime
+            let file_time = chrono::DateTime::<chrono::Utc>::from(modified);
+
+            match condition.operator {
+                ConditionOperator::Equal => Ok(file_time == value_date),
+                ConditionOperator::NotEqual => Ok(file_time != value_date),
+                ConditionOperator::GreaterThan => Ok(file_time > value_date),
+                ConditionOperator::LessThan => Ok(file_time < value_date),
+                ConditionOperator::GreaterThanOrEqual => Ok(file_time >= value_date),
+                ConditionOperator::LessThanOrEqual => Ok(file_time <= value_date),
+                _ => Err(anyhow!(
+                    "Invalid operator for date comparison: {:?}",
+                    condition.operator
+                )),
+            }
+        }
+        ContentProperty::Created => {
+            let created = analysis.metadata.created;
+
+            // Parse the condition value as a date string (ISO 8601 format)
+            let value_date =
+                chrono::DateTime::parse_from_rfc3339(&condition.value).map_err(|_| {
+                    anyhow!(
+                        "Invalid date format: {}. Use ISO 8601 format (e.g., 2025-08-07T07:23:00Z)",
+                        condition.value
+                    )
+                })?;
+
+            // Convert SystemTime to chrono::DateTime
+            let file_time = chrono::DateTime::<chrono::Utc>::from(created);
+
+            match condition.operator {
+                ConditionOperator::Equal => Ok(file_time == value_date),
+                ConditionOperator::NotEqual => Ok(file_time != value_date),
+                ConditionOperator::GreaterThan => Ok(file_time > value_date),
+                ConditionOperator::LessThan => Ok(file_time < value_date),
+                ConditionOperator::GreaterThanOrEqual => Ok(file_time >= value_date),
+                ConditionOperator::LessThanOrEqual => Ok(file_time <= value_date),
+                _ => Err(anyhow!(
+                    "Invalid operator for date comparison: {:?}",
+                    condition.operator
+                )),
+            }
+        }
     }
 }

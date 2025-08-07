@@ -1,9 +1,9 @@
 use atty::Stream;
-use clap::{Arg, ArgMatches, command, crate_authors, crate_description, crate_name, crate_version};
+use clap::{Arg, ArgMatches, Command, command, crate_authors, crate_description, crate_name, crate_version};
 
 use crate::constants::{
     CONFIG_HELP, DEFAULT_CONFIG_PATH, DRY_RUN_HELP, LOCAL_LOGGING_HELP, LOG_FILE_DEFAULT,
-    LOG_FILE_HELP, VERBOSE_HELP,
+    LOG_FILE_HELP, VERBOSE_HELP, WIZARD_HELP, WIZARD_OUTPUT_HELP,
 };
 use crate::errors::{Result, generic_error};
 use crate::logging::LogLevel;
@@ -85,6 +85,17 @@ pub fn get_matches() -> Result<ArgMatches> {
         .help(LOCAL_LOGGING_HELP)
         .action(clap::ArgAction::SetTrue);
 
+    // Create the wizard subcommand
+    let wizard_cmd = Command::new("wizard")
+        .about(WIZARD_HELP)
+        .arg(
+            Arg::new("output")
+                .short('o')
+                .long("output")
+                .help(WIZARD_OUTPUT_HELP)
+                .default_value(DEFAULT_CONFIG_PATH)
+        );
+
     let matches = command!()
         .author(crate_authors!())
         .about(crate_description!())
@@ -95,6 +106,7 @@ pub fn get_matches() -> Result<ArgMatches> {
         .arg(log_file)
         .arg(log_locally)
         .arg(arg_verbose)
+        .subcommand(wizard_cmd)
         .get_matches();
 
     Ok(matches)
@@ -149,6 +161,39 @@ pub fn get_log_file(matches: &ArgMatches) -> Result<String> {
             .to_str()
             .ok_or_else(|| generic_error(&format!("Failed to convert path to string: {path:?}")))?;
         Ok(path_str.to_string())
+    }
+}
+
+/// Checks if the wizard subcommand was used
+///
+/// # Arguments
+/// * `matches` - The parsed command-line arguments
+///
+/// # Returns
+/// * `bool` - True if the wizard subcommand was used, false otherwise
+pub fn is_wizard_command(matches: &ArgMatches) -> bool {
+    matches.subcommand_matches("wizard").is_some()
+}
+
+/// Gets the output path for the wizard command
+///
+/// # Arguments
+/// * `matches` - The parsed command-line arguments
+///
+/// # Returns
+/// * `Result<String>` - The output path or an error
+///
+/// # Errors
+/// Returns an error if the output path cannot be determined
+pub fn get_wizard_output_path(matches: &ArgMatches) -> Result<String> {
+    if let Some(wizard_matches) = matches.subcommand_matches("wizard") {
+        let output = wizard_matches
+            .get_one::<String>("output")
+            .cloned()
+            .unwrap_or_else(|| DEFAULT_CONFIG_PATH.to_string());
+        Ok(output)
+    } else {
+        Err(generic_error("Wizard command not found"))
     }
 }
 

@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Result};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::discovery::ContentCondition;
 use crate::path_gen::FolderFunction;
@@ -14,7 +14,7 @@ use crate::utils::{clean_pattern, extract_pattern};
 /// Configuration for the file sorting application
 ///
 /// Contains the root directories, download directory, rules, and files to process.
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Config {
     /// Root directories where files will be moved or copied to
     #[serde(deserialize_with = "deserialize_from_arrays_to_pathbuf_vec")]
@@ -153,9 +153,9 @@ impl Config {
 /// Represents a file format conversion configuration
 ///
 /// Specifies the source and target formats for file conversion
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct FormatConversion {
-    /// Source file format (e.g., "jpg", "png", "utf-8")
+    /// Source file format (e.g. "jpg", "png", "utf-8")
     #[serde(alias = "from")]
     pub source_format: String,
     /// Target file format (e.g., "png", "webp", "utf-16")
@@ -169,7 +169,7 @@ pub struct FormatConversion {
 ///
 /// Defines how file paths should be processed, including date formatting,
 /// pattern replacement, and file format conversion.
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct ConfigProcessor {
     /// String to split the filename with
     pub splitter: Option<String>,
@@ -218,7 +218,7 @@ pub enum Rules {
 ///
 /// A rule defines how files should be matched and where they should be moved or copied.
 /// Rules can match files based on filename patterns or content-based conditions.
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct Rule {
     /// The title of the rule
     pub title: String,

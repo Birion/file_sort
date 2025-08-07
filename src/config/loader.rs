@@ -30,18 +30,18 @@ fn merge_configs(parent: Config, mut child: Config) -> Config {
     if child.root.is_empty() {
         child.root = parent.root;
     }
-    
+
     // If child has no rules, use parent's rules
     if child.rules.is_empty() {
         child.rules = parent.rules;
     } else {
-        // Append parent rules to child rules
+        // Append parent rules to child rules.
         // Child rules take precedence as they come first in the list
         let mut merged_rules = child.rules;
         merged_rules.extend(parent.rules);
         child.rules = merged_rules;
     }
-    
+
     // Return the merged configuration
     child
 }
@@ -83,8 +83,8 @@ pub fn load_config(file: PathBuf) -> Result<Config> {
 
     // Handle parent configuration if specified
     if let Some(parent_path) = &config.parent {
-        debug!("Loading parent configuration from {}", parent_path);
-        
+        debug!("Loading parent configuration from {parent_path}");
+
         // Resolve parent path relative to the current config file's directory
         let parent_file = if parent_path.starts_with('/') || parent_path.contains(':') {
             // Absolute path
@@ -108,7 +108,7 @@ pub fn load_config(file: PathBuf) -> Result<Config> {
 
         // Load parent configuration
         let parent_config = load_config(parent_file)?;
-        
+
         // Merge parent configuration with current configuration
         config = merge_configs(parent_config, config);
     }
@@ -158,8 +158,8 @@ pub fn load_config_for_testing(file: PathBuf) -> Result<Config> {
 
     // Handle parent configuration if specified
     if let Some(parent_path) = &config.parent {
-        debug!("Loading parent configuration from {}", parent_path);
-        
+        debug!("Loading parent configuration from {parent_path}");
+
         // Resolve parent path relative to the current config file's directory
         let parent_file = if parent_path.starts_with('/') || parent_path.contains(':') {
             // Absolute path
@@ -183,7 +183,7 @@ pub fn load_config_for_testing(file: PathBuf) -> Result<Config> {
 
         // Load parent configuration
         let parent_config = load_config_for_testing(parent_file)?;
-        
+
         // Merge parent configuration with current configuration
         config = merge_configs(parent_config, config);
     }

@@ -1,7 +1,9 @@
 use anyhow::Result;
 use file_sort::cli::{
     check_for_stdout_stream, get_configuration_file_option, get_log_file, get_verbosity,
+    get_wizard_output_path, is_wizard_command,
 };
+use file_sort::config::create_config_with_wizard;
 use file_sort::logging::init_logger;
 use file_sort::workflow::{process_files, ProcessingOptions};
 use human_panic::setup_panic;
@@ -12,6 +14,18 @@ fn main() -> Result<()> {
 
     // Get command-line arguments
     let matches = get_configuration_file_option()?;
+
+    // Check if the wizard subcommand was used
+    if is_wizard_command(&matches) {
+        // Get the output path for the wizard
+        let output_path = get_wizard_output_path(&matches)?;
+        
+        // Run the configuration wizard
+        create_config_with_wizard(&output_path)?;
+        
+        check_for_stdout_stream();
+        return Ok(());
+    }
 
     // Initialise the logger with the verbosity level from the command-line arguments
     let verbosity = get_verbosity(&matches);
