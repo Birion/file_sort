@@ -36,13 +36,13 @@ fn test_get_wizard_output_path() {
                 clap::Arg::new("output")
                     .short('o')
                     .long("output")
-                    .default_value("config.bck.yaml"),
+                    .default_value("config.yaml"),
             ),
         )
         .get_matches_from(args);
 
     let output_path = get_wizard_output_path(&matches).unwrap();
-    assert_eq!(output_path, "config.bck.yaml");
+    assert_eq!(output_path, "config.yaml");
 
     // Test with custom output path
     let args = vec!["fsort", "wizard", "--output", "custom_config.yaml"];
@@ -52,7 +52,7 @@ fn test_get_wizard_output_path() {
                 clap::Arg::new("output")
                     .short('o')
                     .long("output")
-                    .default_value("config.bck.yaml"),
+                    .default_value("config.yaml"),
             ),
         )
         .get_matches_from(args);

@@ -7,6 +7,10 @@ use std::path::PathBuf;
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 
+use crate::config::serializer::{
+    serialize_optional_pathbuf_to_array, serialize_pathbuf_to_array,
+    serialize_pathbuf_vec_to_arrays, serialize_rules,
+};
 use crate::discovery::ContentCondition;
 use crate::path_gen::FolderFunction;
 use crate::utils::{clean_pattern, extract_pattern};
@@ -18,18 +22,22 @@ use crate::utils::{clean_pattern, extract_pattern};
 pub struct Config {
     /// Root directories where files will be moved or copied to
     #[serde(deserialize_with = "deserialize_from_arrays_to_pathbuf_vec")]
+    #[serde(serialize_with = "serialize_pathbuf_vec_to_arrays")]
     pub root: Vec<PathBuf>,
     /// Directory to scan for files to process
     #[serde(deserialize_with = "deserialize_from_array_to_pathbuf")]
+    #[serde(serialize_with = "serialize_pathbuf_to_array")]
     pub download: PathBuf,
     /// Rules for sorting files
     #[serde(deserialize_with = "parse_rules")]
+    #[serde(serialize_with = "serialize_rules")]
     pub rules: RulesList,
     /// Files found in the download directory
-    #[serde(skip_deserializing)]
+    #[serde(skip)]
     pub files: Vec<PathBuf>,
     /// Path to parent configuration file for inheritance
     #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
 }
 
@@ -150,52 +158,6 @@ impl Config {
     }
 }
 
-/// Represents a file format conversion configuration
-///
-/// Specifies the source and target formats for file conversion
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
-pub struct FormatConversion {
-    /// Source file format (e.g. "jpg", "png", "utf-8")
-    #[serde(alias = "from")]
-    pub source_format: String,
-    /// Target file format (e.g., "png", "webp", "utf-16")
-    #[serde(alias = "to")]
-    pub target_format: String,
-    /// Optional resize dimensions for image conversion (width, height)
-    pub resize: Option<(u32, u32)>,
-}
-
-/// Configuration for processing file paths
-///
-/// Defines how file paths should be processed, including date formatting,
-/// pattern replacement, and file format conversion.
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
-pub struct ConfigProcessor {
-    /// String to split the filename with
-    pub splitter: Option<String>,
-    /// String to merge parts of the filename with
-    #[serde(default = "default_merger")]
-    pub merger: Option<String>,
-    /// Regex pattern to match in the filename
-    pub pattern: Option<String>,
-    /// Format string for date processing
-    pub date_format: Option<String>,
-    /// Replacement string for pattern matching
-    pub replacement: Option<String>,
-    /// File format conversion configuration
-    pub format_conversion: Option<FormatConversion>,
-}
-
-/// Default merger function for ConfigProcessor
-fn default_merger() -> Option<String> {
-    Some(" ".to_string())
-}
-
-/// Default value for match_all_conditions in Rule
-fn default_match_all() -> bool {
-    true
-}
-
 /// A list of rules for file sorting.
 ///
 /// This type is used throughout the application to represent collections of sorting rules.
@@ -223,10 +185,13 @@ pub struct Rule {
     /// The title of the rule
     pub title: String,
     /// The pattern to match files against
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pattern: Option<String>,
     /// Multiple patterns to match files against
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub patterns: Option<Vec<String>>,
     /// Content-based conditions to match files against
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub content_conditions: Option<Vec<ContentCondition>>,
     /// Whether all content conditions must match (AND logic) or any can match (OR logic)
     #[serde(default = "default_match_all")]
@@ -234,16 +199,22 @@ pub struct Rule {
     /// The directory to move or copy files to
     #[serde(default)]
     #[serde(deserialize_with = "deserialize_from_array_to_optional_pathbuf")]
+    #[serde(serialize_with = "serialize_optional_pathbuf_to_array")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub directory: Option<PathBuf>,
     /// Optional transformative function to apply to the directory
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub function: Option<FolderFunction>,
     /// Optional processors to apply to the file path
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub processors: Option<ConfigProcessor>,
     /// The index of the root directory to use
     #[serde(default)]
+    #[serde(skip_serializing_if = "is_default")]
     pub root: usize,
     /// Whether to copy the file instead of moving it
     #[serde(default)]
+    #[serde(skip_serializing_if = "is_default")]
     pub copy: bool,
     /// The processed pattern without angle brackets
     #[serde(skip_deserializing, skip_serializing)]
@@ -274,9 +245,66 @@ impl Rule {
     }
 }
 
+/// Configuration for processing file paths
+///
+/// Defines how file paths should be processed, including date formatting,
+/// pattern replacement, and file format conversion.
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct ConfigProcessor {
+    /// String to split the filename with
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub splitter: Option<String>,
+    /// String to merge parts of the filename with
+    #[serde(default = "default_merger")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub merger: Option<String>,
+    /// Regex pattern to match in the filename
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pattern: Option<String>,
+    /// Format string for date processing
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub date_format: Option<String>,
+    /// Replacement string for pattern matching
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub replacement: Option<String>,
+    /// File format conversion configuration
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub format_conversion: Option<FormatConversion>,
+}
+
+/// Represents a file format conversion configuration
+///
+/// Specifies the source and target formats for file conversion
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct FormatConversion {
+    /// Source file format (e.g. "jpg", "png", "utf-8")
+    #[serde(rename(deserialize = "from", serialize = "from"))]
+    pub source_format: String,
+    /// Target file format (e.g., "png", "webp", "utf-16")
+    #[serde(rename(deserialize = "to", serialize = "to"))]
+    pub target_format: String,
+    /// Optional resize dimensions for image conversion (width, height)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resize: Option<(u32, u32)>,
+}
+
+/// Default merger function for ConfigProcessor
+fn default_merger() -> Option<String> {
+    Some(" ".to_string())
+}
+
+/// Default value for match_all_conditions in Rule
+fn default_match_all() -> bool {
+    true
+}
+
+fn is_default<T: Default + PartialEq>(t: &T) -> bool {
+    t == &T::default()
+}
+
 // Note: The following deserialization functions are referenced in the struct definitions
-// but are defined in the loader.rs file.
-use super::loader::{
+// but are defined in the deserializer file.
+use super::deserializer::{
     deserialize_from_array_to_optional_pathbuf, deserialize_from_array_to_pathbuf,
     deserialize_from_arrays_to_pathbuf_vec, parse_rules,
 };

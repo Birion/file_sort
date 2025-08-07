@@ -24,7 +24,7 @@ fn test_parallel_processing() {
     }
 
     // Create a test configuration file
-    let config_path = temp_dir.path().join("../config.bck.yaml");
+    let config_path = temp_dir.path().join("../config.yaml");
     let config_content = format!(
         r#"
 download:
@@ -88,7 +88,7 @@ fn test_parallel_processing_dry_run() {
     }
 
     // Create a test configuration file
-    let config_path = temp_dir.path().join("../config.bck.yaml");
+    let config_path = temp_dir.path().join("../config.yaml");
     let config_content = format!(
         r#"
 download:

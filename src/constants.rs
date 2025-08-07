@@ -50,4 +50,4 @@ pub const WIZARD_HELP: &str = "Create a new configuration file with a wizard";
 pub const WIZARD_OUTPUT_HELP: &str = "Path where the new configuration file will be saved";
 
 /// Default path for the configuration file
-pub const DEFAULT_CONFIG_PATH: &str = "config.bck.yaml";
+pub const DEFAULT_CONFIG_PATH: &str = "config.yaml";
