@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use glob::glob;
 use log::debug;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::config::Rule;
 use crate::constants::WILDCARD;
@@ -42,7 +42,7 @@ pub type ArgumentList = Vec<String>;
 ///
 /// This would select the last (most recent) directory that matches the pattern "comics/batman/*".
 ///
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
 #[serde(tag = "name")]
 pub enum FolderFunction {
@@ -115,7 +115,6 @@ impl FolderFunction {
                 for x in arg {
                     path.push(x)
                 }
-                path.push(WILDCARD);
             }
             None => path.push(WILDCARD),
         }
@@ -172,16 +171,21 @@ pub fn apply_transformative_function(
     let root_path = &root_paths[rule.root];
 
     // Determine the target directory
-    let target_dir = if let Some(function) = &rule.function {
-        // Apply the transformative function
-        debug!("Applying transformative function for rule: {}", rule.title);
-        function.get_dir(root_path)?
-    } else if let Some(dir) = &rule.directory {
+    let target_dir = if let Some(dir) = &rule.directory {
         // Use the specified directory
         full_path(root_path, dir)
     } else {
         // Use the rule title as the directory
         root_path.join(&rule.title)
+    };
+
+    let target_dir = if let Some(function) = &rule.function {
+        // Apply the transformative function
+        debug!("Applying transformative function for rule: {}", rule.title);
+        function.get_dir(&target_dir)?
+    } else {
+        // No transformative function, use the target directory as is
+        target_dir
     };
 
     debug!("Target directory: {}", target_dir.display());

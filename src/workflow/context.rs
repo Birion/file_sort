@@ -2,7 +2,33 @@
 //!
 //! This module defines the context passed between workflow steps.
 
+use std::path::PathBuf;
+
 use crate::config::Config;
+
+/// Represents a planned file operation for dry-run mode
+#[derive(Debug, Clone)]
+pub struct PlannedOperation {
+    /// The source path of the file
+    pub source: PathBuf,
+    /// The destination path of the file
+    pub destination: PathBuf,
+    /// The type of operation (copy, move, convert)
+    pub operation_type: OperationType,
+    /// The rule title that matched this file
+    pub rule_title: String,
+}
+
+/// Type of file operation
+#[derive(Debug, Clone, PartialEq)]
+pub enum OperationType {
+    /// Copy operation
+    Copy,
+    /// Move operation
+    Move,
+    /// Format conversion operation
+    Convert(String, String), // from_format, to_format
+}
 
 /// Context for the workflow
 ///
@@ -15,6 +41,8 @@ pub struct WorkflowContext {
     pub dry_run: bool,
     /// Statistics about the processing
     pub stats: WorkflowStats,
+    /// Planned operations for dry-run mode
+    pub planned_operations: Vec<PlannedOperation>,
 }
 
 /// Statistics about the workflow
@@ -50,7 +78,16 @@ impl WorkflowContext {
             config,
             dry_run,
             stats: WorkflowStats::default(),
+            planned_operations: Vec::new(),
         }
+    }
+    
+    /// Adds a planned operation to the context
+    ///
+    /// # Arguments
+    /// * `operation` - The planned operation to add
+    pub fn add_planned_operation(&mut self, operation: PlannedOperation) {
+        self.planned_operations.push(operation);
     }
 
     /// Increments the number of files processed

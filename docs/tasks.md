@@ -17,14 +17,14 @@ logically ordered and covers both architectural and code-level improvements.
 
 ## Feature Enhancements
 
-1. [x] Add support for converting file formats (e.g., image resizing, text encoding conversion)
-2. [ ] Add support for multiple configuration files with inheritance
-3. [ ] Implement a dry-run mode with detailed output of planned operations
-4. [ ] Add support for file-content-based rules using file metadata or content analysis
-5. [ ] Implement parallel processing for file operations to improve performance
-6. [ ] Add support for conditional rules based on file properties (size, date, content type)
-7. [ ] Implement a configuration wizard for creating new config files
-8. [ ] Add support for environment variable expansion in configuration paths
+1. [x] Add support for converting file formats (e.g. image resizing, text encoding conversion)
+2. [x] Add support for multiple configuration files with inheritance
+3. [x] Implement a dry-run mode with detailed output of planned operations
+4. [x] Add support for file-content-based rules using file metadata or content analysis
+5. [x] Implement parallel processing for file operations to improve performance
+6. [x] Add support for conditional rules based on file properties (size, date, content type)
+7. [x] Implement a configuration wizard for creating new config files
+8. [x] Add support for environment variable expansion in configuration paths
 9. [ ] Implement a plugin system for custom processors
 10. [ ] Add support for different configuration formats (TOML, INI) in addition to YAML
 11. [ ] Implement incremental processing (only process new or changed files)
@@ -38,8 +38,7 @@ logically ordered and covers both architectural and code-level improvements.
 5. [ ] Add a verbose mode for detailed logging
 6. [ ] Implement a configuration validation command with helpful error messages
 7. [ ] Add a command to list all available rules in the configuration
-8. [ ] Implement a simulation mode that shows what would happen without making changes
-9. [ ] Add support for undo operations
+8. [ ] Add support for undo operations
 
 ## Testing and Reliability
 

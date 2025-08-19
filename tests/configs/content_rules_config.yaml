@@ -1,0 +1,66 @@
+# Content-based rules configuration example
+# This configuration demonstrates how to use content-based rules for file sorting
+
+# Define root directories
+roots:
+  - C:/Downloads
+  - C:/Temp
+
+# Define rules for sorting files
+rules:
+  # Rule for large image files
+  - title: Large Images
+    # No pattern is required when using content conditions
+    content_conditions:
+      - property: size
+        operator: gt
+        value: "5000000"  # 5MB
+      - property: mime_type
+        operator: contains
+        value: "image/"
+    match_all_conditions: true  # Both conditions must match (AND logic)
+    directory: C:/Media/LargeImages
+
+  # Rule for text files containing "TODO"
+  - title: TODO Text Files
+    content_conditions:
+      - property: is_text
+        operator: eq
+        value: "true"
+      - property: content
+        operator: contains
+        value: "TODO"
+    match_all_conditions: true
+    directory: C:/Documents/TODOs
+
+  # Rule for PDF documents
+  - title: PDF Documents
+    content_conditions:
+      - property: mime_type
+        operator: eq
+        value: "application/pdf"
+    directory: C:/Documents/PDFs
+
+  # Rule combining pattern and content conditions
+  - title: Large CSV Files
+    pattern: "*.csv"
+    content_conditions:
+      - property: size
+        operator: gt
+        value: "1000000"  # 1MB
+    directory: C:/Data/LargeCSVs
+
+  # Rule with OR logic for content conditions
+  - title: Media Files
+    content_conditions:
+      - property: mime_type
+        operator: contains
+        value: "image/"
+      - property: mime_type
+        operator: contains
+        value: "video/"
+      - property: mime_type
+        operator: contains
+        value: "audio/"
+    match_all_conditions: false  # Any condition can match (OR logic)
+    directory: C:/Media/Mixed
