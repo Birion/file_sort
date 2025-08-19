@@ -428,10 +428,99 @@ where
 }
 
 use crate::config::Rule;
-use shellexpand::tilde;
+use shellexpand::{tilde, env};
+use std::env as std_env;
 
+/// Expands environment variables and tilde in a path string
+///
+/// This function performs the following expansions:
+/// 1. Windows-style environment variables (%VAR%)
+/// 2. Unix-style environment variables ($VAR)
+/// 3. Tilde (~) to the user's home directory
+///
+/// # Arguments
+/// * `path` - The path string to expand
+///
+/// # Returns
+/// The expanded path as a String
+///
+/// # Examples
+/// ```
+/// use file_sort::config::deserializer::expand_path;
+///
+/// // Unix-style environment variables
+/// // If TEMP is set to "C:/temp"
+/// let path = "$TEMP/downloads";
+/// let expanded = expand_path(path);
+/// // expanded will be "C:/temp/downloads"
+///
+/// // Windows-style environment variables
+/// // If USERPROFILE is set to "C:/Users/username"
+/// let path = "%USERPROFILE%\\Documents";
+/// let expanded = expand_path(path);
+/// // expanded will be "C:/Users/username\Documents"
+///
+/// // Tilde expansion
+/// let path = "~/documents";
+/// let expanded = expand_path(path);
+/// // expanded will be "/home/username/documents" on Unix
+/// // or "C:/Users/username/documents" on Windows
+/// ```
 pub fn expand_path(path: &str) -> String {
-    tilde(path).to_string()
+    // First try to expand Windows-style environment variables (%VAR%)
+    let windows_expanded = expand_windows_env_vars(path);
+    
+    // Then expand Unix-style environment variables ($VAR)
+    match env(&windows_expanded) {
+        Ok(expanded) => tilde(&expanded).to_string(),
+        Err(_) => {
+            // If environment variable expansion fails, just expand tilde
+            // This allows paths without environment variables to still work
+            debug!("Failed to expand environment variables in path: {}", path);
+            tilde(&windows_expanded).to_string()
+        }
+    }
+}
+
+/// Helper function to expand Windows-style environment variables (%VAR%)
+///
+/// # Arguments
+/// * `path` - The path string containing Windows-style environment variables
+///
+/// # Returns
+/// The path with Windows-style environment variables expanded
+fn expand_windows_env_vars(path: &str) -> String {
+    let mut result = path.to_string();
+    let mut start_idx = 0;
+    
+    // Find all occurrences of %VAR% and replace them with their values
+    while let Some(start) = result[start_idx..].find('%') {
+        let start = start_idx + start;
+        if let Some(end) = result[start + 1..].find('%') {
+            let end = start + 1 + end;
+            let var_name = &result[start + 1..end];
+            
+            // Get the environment variable value
+            if let Ok(value) = std_env::var(var_name) {
+                // Replace %VAR% with its value
+                result = format!("{}{}{}", 
+                    &result[0..start], 
+                    value, 
+                    &result[end + 1..]);
+                
+                // Update start_idx to continue search after the replacement
+                start_idx = start + value.len();
+            } else {
+                // If variable not found, skip this occurrence
+                start_idx = end + 1;
+            }
+        } else {
+            // No matching closing %, stop searching
+            break;
+        }
+    }
+    
+    result
 }
 
 pub fn handle_colon_end(mut path: String) -> String {

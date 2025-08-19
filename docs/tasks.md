@@ -24,7 +24,7 @@ logically ordered and covers both architectural and code-level improvements.
 5. [x] Implement parallel processing for file operations to improve performance
 6. [x] Add support for conditional rules based on file properties (size, date, content type)
 7. [x] Implement a configuration wizard for creating new config files
-8. [ ] Add support for environment variable expansion in configuration paths
+8. [x] Add support for environment variable expansion in configuration paths
 9. [ ] Implement a plugin system for custom processors
 10. [ ] Add support for different configuration formats (TOML, INI) in addition to YAML
 11. [ ] Implement incremental processing (only process new or changed files)
